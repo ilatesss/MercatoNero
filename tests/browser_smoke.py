@@ -22,6 +22,24 @@ with sync_playwright() as pw:
     page.evaluate('navigator.serviceWorker.ready')
     page.wait_for_function('navigator.serviceWorker.controller !== null')
     page.screenshot(path=str(ROOT / 'docs' / 'anteprima-desktop.png'), full_page=True)
+    assert page.locator('#difficulty').input_value() == 'easy'
+    assert page.locator('#count').input_value() == '3'
+    page.get_by_role('button', name='Tema scuro', exact=True).click()
+    assert page.locator('html').get_attribute('data-theme') == 'dark'
+    page.reload()
+    assert page.locator('html').get_attribute('data-theme') == 'dark'
+    page.screenshot(path=str(ROOT / 'docs' / 'anteprima-scura.png'), full_page=True)
+    # Contrasto dei testi principali, non delle illustrazioni decorative.
+    contrasts=page.evaluate(r"""() => {
+      function lum(s){const c=s.match(/[\d.]+/g).slice(0,3).map(Number).map(v=>{v/=255;return v<=.04045?v/12.92:((v+.055)/1.055)**2.4;});return .2126*c[0]+.7152*c[1]+.0722*c[2];}
+      return ['body','.object-card','.hand-card'].filter(s=>document.querySelector(s)).map(s=>{const c=getComputedStyle(document.querySelector(s)),a=lum(c.color),b=lum(c.backgroundColor);return {selector:s,ratio:(Math.max(a,b)+.05)/(Math.min(a,b)+.05)};});
+    }""")
+    assert all(c['ratio'] >= 4.5 for c in contrasts), contrasts
+    page.emulate_media(media='print')
+    assert page.evaluate("getComputedStyle(document.body).backgroundColor") == 'rgb(255, 255, 255)'
+    page.emulate_media(media='screen')
+    page.get_by_role('button', name='Tema chiaro', exact=True).click()
+    page.locator('#count').select_option('4')
     assert 'OBIETTIVO: 2 SET' in page.locator('main').inner_text()
     page.get_by_role('button', name='Come si gioca').click()
     assert page.locator('#help').is_visible()
@@ -41,6 +59,19 @@ with sync_playwright() as pw:
     page.set_viewport_size({'width': 1440, 'height': 1050})
     page.get_by_role('button', name='Apri il mercato').click()
     page.screenshot(path=str(ROOT / 'docs' / 'anteprima-tavolo.png'), full_page=True)
+    assert page.locator('#suggest-bid').is_visible()
+    page.locator('#suggest-bid').click()
+    assert page.locator('.hand-card.selected').count() == 2
+    game_before_theme=page.evaluate("localStorage.getItem('mercatonero-game-v2')")
+    page.get_by_role('button', name='Tema scuro', exact=True).click()
+    assert page.evaluate("localStorage.getItem('mercatonero-game-v2')") == game_before_theme
+    page.screenshot(path=str(ROOT / 'docs' / 'anteprima-tavolo-scuro.png'), full_page=True)
+    page.set_viewport_size({'width':390,'height':844})
+    page.clock.run_for(200)
+    assert page.evaluate('document.documentElement.scrollWidth <= innerWidth'), 'Overflow tema scuro mobile'
+    page.screenshot(path=str(ROOT / 'docs' / 'anteprima-scura-mobile.png'), full_page=True)
+    page.set_viewport_size({'width':1440,'height':1050})
+    page.get_by_role('button', name='Tema chiaro', exact=True).click()
     context.set_offline(True)
     page.reload()
     page.get_by_role('button', name='Riprendi la partita salvata').click()
@@ -62,7 +93,8 @@ with sync_playwright() as pw:
             for card in ids:
                 page.locator(f'[data-card="{card}"]').click()
             target = next(i for i in range(len(state['players'])) if i != state['actor'])
-            page.locator('#target').select_option(str(target))
+            if page.locator('#target').count():
+                page.locator('#target').select_option(str(target))
             page.locator('[data-action="bid"]').click()
         elif phase in ('fairy', 'alchemist'):
             page.locator('[data-action="skip"]').click()
@@ -168,8 +200,8 @@ with sync_playwright() as pw:
     page.reload()
     page.get_by_role('button', name='Riprendi la partita salvata').click()
     page.locator('#uncover').click()
-    for obj in page.locator('[data-cargo]').evaluate_all('(els)=>els.map(e=>e.dataset.cargo)'):
-        page.locator(f'[data-cargo="{obj}"]').click()
+    page.get_by_role('button', name='Seleziona un set disponibile', exact=True).click()
+    assert page.locator('[data-cargo][aria-pressed="true"]').count() == 3
     page.get_by_role('button', name='Contrabbanda il set', exact=True).click()
     assert 'ULTIMO ROUND' in page.locator('main').inner_text()
     page.get_by_role('button', name='Concludi le azioni').click()
@@ -181,5 +213,5 @@ with sync_playwright() as pw:
     assert 'secondo set' in page.locator('.finish-reason').inner_text()
     assert errors == [], errors
     assert external == [], external
-    print(json.dumps({'passed': True, 'offline_reload': True, 'offline_full_game': True, 'local_privacy': True, 'mobile_no_overflow': True, 'catalog_cards': 78, 'phases_seen': sorted(phases), 'javascript_errors': errors, 'external_requests': external}, indent=2))
+    print(json.dumps({'passed': True, 'offline_reload': True, 'offline_full_game': True, 'local_privacy': True, 'mobile_no_overflow': True, 'catalog_cards': 78, 'dark_theme_persistence': True, 'suggested_bid_and_set': True, 'phases_seen': sorted(phases), 'javascript_errors': errors, 'external_requests': external}, indent=2))
     browser.close()

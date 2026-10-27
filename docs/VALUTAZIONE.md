@@ -14,11 +14,11 @@ Nelle aste conta il valore dell’offerta, poi la posizione dal Mazziere in sens
 
 ## Verifiche e risultati esplorativi
 
-24 test del motore, comprese 400 partite complete con conservazione di tutte le carte. Test mirati per pesca 2/1, assenza del lavaggio, precedenza del Mazziere anche se Ricercato, rimescolo degli Oggetti, mercato parziale, passaggio oltre il quinto round, secondo set e chiusura solo dopo le azioni degli altri, limite 8 finale e formato dei salvataggi.
+28 test del motore, comprese 400 partite Normale e 200 Facile complete con conservazione di tutte le carte. Test mirati per pesca 2/1, assenza del lavaggio, precedenza del Mazziere anche se Ricercato, rimescolo degli Oggetti, mercato parziale, passaggio oltre il quinto round, secondo set e chiusura solo dopo le azioni degli altri, limite 8 finale e formato dei salvataggi.
 
 Il test nel browser copre una partita completa offline, riapertura del salvataggio e dei risultati offline, catalogo di 78 carte, passaggio privato del dispositivo e layout a 390 px. Scenari mirati verificano i pulsanti 2 Monete/1 Trucco, un solo Trucco pescato, limite della mano e secondo set a fine round. Il browser gestito continua a bloccare `file://`; la verifica effettiva usa HTTP locale e cache, poi rete disattivata.
 
-I bot non leggono mani o offerte segrete. Le 2.000 simulazioni a seed fissi, in `SIMULAZIONI.json`, sono un’esplorazione della politica dei bot e non sostituiscono il playtest umano. Non sono stati misurati i tempi reali, il divertimento o l’accessibilità con utenti.
+La modalità Facile, gli aiuti e il tema scuro sono descritti in `FACILE-E-TEMA.md`. I bot non leggono mani o offerte segrete. Le 2.000 simulazioni **Normale** a seed fissi, in `SIMULAZIONI.json`, sono un’esplorazione della politica dei bot e non sostituiscono il playtest umano. Non sono stati misurati i tempi reali, il divertimento o l’accessibilità con utenti.
 
 | Giocatori | Round medi | Retate / partita | Fine per secondo set | Fine con tutti gli Oggetti posseduti |
 | --- | ---: | ---: | ---: | ---: |

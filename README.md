@@ -15,7 +15,9 @@ python3 -m http.server 8000 --bind 127.0.0.1
 
 Apri l’indirizzo del server nel tuo browser. Alla prima apertura il service worker memorizza l’app; dopo l’attivazione puoi giocare e ricaricare anche offline, mantenendo lo stesso indirizzo. Per installarla su un dominio, servi questi file via HTTPS. Il server Python è destinato allo sviluppo locale. Nessun backend necessario.
 
-- **Tu + avversari automatici:** una persona e 2–5 bot euristici. Non leggono mani o puntate coperte altrui.
+- **Tu + avversari automatici:** una persona e 2–5 bot euristici. La prima partita propone 3 giocatori e difficoltà **Facile**. I bot Facile puntano 0–2 carte con una politica meno aggressiva e scelgono meno spesso per completare i set. **Normale** mantiene i bot precedenti. Nessun bot legge mani o puntate coperte altrui. La difficoltà si sceglie prima di iniziare; i salvataggi precedenti restano Normale.
+- **Aiuti sul tavolo:** percorso del round, suggerimento di puntata, selezione rapida di un set, progressi per Famiglia, punti visibili e avviso del Sospetto previsto prima di comprare. Le proposte richiedono sempre la conferma del giocatore. Il menu del bersaglio compare solo quando serve un Trucco offensivo.
+- **Tema scuro:** pulsante «Tema scuro / Tema chiaro» nella barra superiore. La prima scelta segue il sistema; la preferenza viene salvata nel browser. Carte, modali e controlli cambiano insieme. La stampa resta chiara.
 - **Stesso dispositivo:** 3–6 persone si passano il dispositivo. Una schermata copre il tavolo prima di ogni cambio di giocatore. I nomi sono predefiniti.
 - **Salvataggio:** automatico a ogni azione, nel browser. «Riprendi la partita salvata» ripristina anche una fase intermedia. Nessuna sincronizzazione o cifratura: non è un sistema contro chi ispeziona il codice o lo storage.
 - **Carte:** «Le carte» mostra 78 carte e permette la stampa domestica. PDF già generato: [Carte-playtest.pdf](docs/Carte-playtest.pdf).
@@ -47,7 +49,7 @@ npm test
 node tests/simulate.js
 ```
 
-Non serve `npm install`. `npm test` esegue 24 test, tra cui 400 partite complete con invarianti di conservazione delle carte. `simulate.js` esegue altre 2.000 partite (500 per numerosità); risultato conservato in [SIMULAZIONI.json](docs/SIMULAZIONI.json). Sono prove software ed esplorazioni euristiche, non playtest umani. Le simulazioni della vecchia versione sono conservate in `docs/archivio/`.
+Non serve `npm install`. `npm test` esegue 28 test, tra cui 400 partite Normale e 200 Facile complete con invarianti di conservazione delle carte. `simulate.js` esegue altre 2.000 partite (500 per numerosità); risultato conservato in [SIMULAZIONI.json](docs/SIMULAZIONI.json). Sono prove software ed esplorazioni euristiche, non playtest umani. Il confronto dei livelli si riproduce con `node tests/difficulty.js` ed è in `docs/DIFFICOLTA.json`; metodo e limiti in [FACILE-E-TEMA.md](docs/FACILE-E-TEMA.md). Le simulazioni della vecchia versione sono conservate in `docs/archivio/`.
 
 Test browser opzionale con Playwright Python e Chromium già installati nell’ambiente, mentre il server è attivo:
 
@@ -55,7 +57,7 @@ Test browser opzionale con Playwright Python e Chromium già installati nell’a
 python3 tests/browser_smoke.py
 ```
 
-Verifica: partita completa offline, ricarica offline della partita e dei risultati, catalogo di 78 carte, passaggio delle mani, assenza di overflow a 390 px, errori JavaScript e richieste esterne. Genera screenshot e PDF in `docs/`. Verifica anche la scelta di pesca 2/1, la chiusura per secondo set a fine round, l’assenza del lavaggio e la conservazione dei salvataggi precedenti. I rami di Ruolo non incontrati nella singola partita browser sono coperti dai test del motore; non è una matrice cross-browser.
+Verifica: partita completa offline, ricarica offline della partita e dei risultati, catalogo di 78 carte, passaggio delle mani, assenza di overflow a 390 px, errori JavaScript e richieste esterne. Genera screenshot e PDF in `docs/`. Verifica anche tema scuro persistente, layout scuro mobile, contrasto dei testi principali, stampa chiara, pulsanti di suggerimento e la scelta di pesca 2/1, la chiusura per secondo set a fine round, l’assenza del lavaggio e la conservazione dei salvataggi precedenti. I rami di Ruolo non incontrati nella singola partita browser sono coperti dai test del motore; non è una matrice cross-browser.
 
 ## Struttura
 

@@ -35,7 +35,7 @@
     constructor(config={}) {
       this.seed=(config.seed??Date.now())>>>0; this.round=1; this.dealer=0; this.log=[]; this.stats={raids:0,sets:0,passes:0,emptyDraws:0,objectReshuffles:0};this.finishReason=null;this.closingPlayer=null;
       const count=config.count??4; fail(Number.isInteger(count)&&count>=3&&count<=6,'Servono da 3 a 6 giocatori.');
-      this.mode=config.mode??'solo'; const roles=this.shuffle([...ROLES]);
+      this.mode=config.mode??'solo'; this.difficulty=config.difficulty??'normal';fail(['easy','normal'].includes(this.difficulty),'Difficoltà non valida.');const roles=this.shuffle([...ROLES]);
       this.players=Array.from({length:count},(_,i)=>({name:(config.names?.[i]|| (i===0?'Tu':['Morgana','Gatto Cassiere','Rospino','Madama Ombra','Ser Merluzzo'][i-1])).slice(0,24),bot:this.mode==='solo'&&i>0,role:roles[i].id,used:false,copied:null,hand:[],stash:[],caravan:[],suspicion:0}));
       this.coins=this.shuffle([1,2,3,4].flatMap((v,i)=>Array.from({length:[12,10,5,3][i]},(_,j)=>({id:`c${v}-${j}`,kind:'coin',name:'Moneta',value:v}))));
       this.tricks=this.shuffle(TRICKS.flatMap(t=>Array.from({length:3},(_,j)=>({...t,id:`${t.kind}-${j}`})))); this.coinDiscard=[]; this.trickDiscard=[];
@@ -168,12 +168,15 @@
     score(i){const p=this.players[i];return p.stash.reduce((n,o)=>n+o.value,0)+2*p.caravan.reduce((n,o)=>n+o.value,0)-(p.suspicion>=4?2:0);}
     standings(){return this.players.map((p,i)=>({i,name:p.name,score:this.score(i),suspicion:p.suspicion})).sort((a,b)=>b.score-a.score||a.suspicion-b.suspicion);}
     available(i){const reserved=this.phase==='raid'&&this.resume==='alchemist'?this.bids[i].map(c=>c.id):[];return this.players[i].hand.filter(c=>!reserved.includes(c.id));}
+    suggestedBid(i){return [...this.players[i].hand].sort((a,b)=>(a.kind!=='coin')-(b.kind!=='coin')||b.value-a.value).slice(0,2).map(c=>c.id);}
     botStep(){
       const i=this.actor,p=this.players[i],power=this.power(i),low=[...this.available(i)].sort((a,b)=>a.value-b.value);
       const target=this.players.map((q,j)=>({j,s:this.score(j),suspicion:q.suspicion})).filter(q=>q.j!==i).sort((a,b)=>b.s-b.s||b.suspicion-a.suspicion)[0].j;
       if(this.phase==='bid'){
         if(power==='apprentice'&&!p.used){const t=this.players.findIndex((q,j)=>j!==i&&q.role==='witch');if(t>=0){this.act('copy',{target:t});return;}}
-        // Décision prise sans lire les mains ou les offres adverses.
+        // Facile: meno carte e scelte casuali, senza cambiare carte o punteggi.
+        if(this.difficulty==='easy'&&p.bot){const roll=this.random(),n=roll<0.15?0:roll<0.65?1:2;this.act('bid',{ids:this.shuffle([...p.hand]).slice(0,n).map(c=>c.id),target});return;}
+        // Decisione presa senza leggere mani o offerte avversarie.
         const sorted=[...p.hand].sort((a,b)=>(b.kind==='double'?2:b.value)-(a.kind==='double'?2:a.value));const max=p.hand.length>5?3:Math.min(2,p.hand.length);const n=this.random()<0.1?0:max;
         this.act('bid',{ids:sorted.slice(0,n).map(c=>c.id),target});return;
       }
@@ -189,7 +192,7 @@
       }
       if(this.phase==='choose'){
         const utility=o=>o.value+3*p.stash.filter(x=>x.family===o.family).length-(p.suspicion+o.apples>=6?3:0);
-        const o=[...this.market].sort((a,b)=>utility(b)-utility(a))[0];this.act('choose',{id:o.id,witch:power==='witch'&&o.apples>=2});return;
+        const o=this.difficulty==='easy'&&p.bot&&this.random()<0.65?this.market[Math.floor(this.random()*this.market.length)]:[...this.market].sort((a,b)=>utility(b)-utility(a))[0];this.act('choose',{id:o.id,witch:power==='witch'&&o.apples>=2});return;
       }
       if(this.phase==='thief'){this.steal(true);return;}
       if(this.phase==='end'){
@@ -200,7 +203,7 @@
       if(this.phase==='trim'){this.act('trim',{ids:low.slice(0,p.hand.length-8).map(c=>c.id)});return;}
     }
     toJSON(){return {...this,version:2};}
-    static restore(data){fail(data?.version===2&&Array.isArray(data.players)&&data.players.length>=3&&data.players.length<=6,'Salvataggio incompatibile con le regole 0.5: inizia una nuova partita.');return Object.assign(Object.create(Game.prototype),data);}
+    static restore(data){fail(data?.version===2&&Array.isArray(data.players)&&data.players.length>=3&&data.players.length<=6,'Salvataggio incompatibile con le regole 0.5: inizia una nuova partita.');return Object.assign(Object.create(Game.prototype),{difficulty:'normal'},data);}
   }
   const api={Game,FAMILIES,OBJECTS,TRICKS,ROLES};if(typeof module!=='undefined')module.exports=api;root.Mercato=api;
 })(typeof globalThis!=='undefined'?globalThis:this);

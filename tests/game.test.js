@@ -134,3 +134,26 @@ test('Rimescolo senza duplicare le collezioni, anche con mercato parziale',()=>{
 test('Versione del salvataggio impedisce di applicare nuove regole a vecchie partite',()=>{
   const data=JSON.parse(JSON.stringify(fresh()));assert.equal(data.version,2);assert.equal(Game.restore(data).version,2);data.version=1;assert.throws(()=>Game.restore(data),/0.5/);
 });
+test('Facile riduce le offerte dei bot senza modificare distribuzione o regole',()=>{
+  for(let seed=1;seed<=100;seed++){
+    const easy=new Game({count:3,seed,difficulty:'easy'}),normal=new Game({count:3,seed,difficulty:'normal'});
+    assert.deepEqual(easy.players,normal.players);easy.actor=1;normal.actor=1;easy.players[1].role=normal.players[1].role='witch';easy.queue=[2,0];normal.queue=[2,0];
+    easy.botStep();normal.botStep();assert.ok(easy.bids[1].length<=2);invariant(easy);
+  }
+  assert.throws(()=>new Game({difficulty:'impossible'}));
+});
+test('Suggerimento usa solo la propria mano e preferisce due Monete',()=>{
+  const g=fresh();const ids=g.suggestedBid(0);assert.equal(ids.length,2);assert.ok(ids.every(id=>g.card(0,id)?.kind==='coin'));
+  const before=g.suggestedBid(0);g.players[1].hand.reverse();g.bids[1]=[coin('segreta',100)];assert.deepEqual(g.suggestedBid(0),before);
+});
+test('Vecchi salvataggi mantengono Normale; Facile si ripristina senza cambiare',()=>{
+  const data=JSON.parse(JSON.stringify(fresh()));delete data.difficulty;assert.equal(Game.restore(data).difficulty,'normal');
+  const easy=new Game({count:3,seed:123,difficulty:'easy'});assert.equal(Game.restore(JSON.parse(JSON.stringify(easy))).difficulty,'easy');
+});
+test('200 partite Facile complete rispettano conservazione e regole di chiusura',()=>{
+  for(let n=3;n<=6;n++)for(let seed=1;seed<=50;seed++){
+    const g=new Game({count:n,seed,difficulty:'easy'});let steps=0;
+    while(g.phase!=='over'&&steps++<5000){g.botStep();invariant(g);}
+    assert.equal(g.phase,'over');assert.ok(g.players.every(p=>p.hand.length<=8));
+  }
+});

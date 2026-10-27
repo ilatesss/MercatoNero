@@ -10,3 +10,42 @@
 .hero-art{overflow:clip}
 
 .apple-icon{width:11px;height:12px;vertical-align:-2px}.card-mirror .apple-icon{width:9px;height:10px}.hand-mirror{transform:rotate(180deg);font-size:9px;color:var(--muted);align-self:center;margin-top:7px}.card-bottom>span:last-child{white-space:nowrap}
+
+[hidden]{display:none!important}
+.round-guide{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0 12px;font-size:11px;color:var(--muted)}
+.round-guide span{padding:5px 9px;border:1px solid var(--line)}
+.round-guide .active{color:var(--ink);border-color:var(--ink);font-weight:700}
+.coach{background:#e6ead8;border-left:3px solid #61784e;padding:14px 17px;margin:0 0 18px;font-size:13px}
+.coach p{margin:6px 0}.coach small{font-size:11px;color:#4b604a}
+@media(max-width:720px){.topbar{flex-wrap:wrap}.topbar nav{flex-wrap:wrap;gap:17px}.setup-form .field{flex-basis:40%}.setup-form #difficulty-field{flex-basis:100%}.round-guide{gap:5px}.round-guide span{padding:5px 7px}}
+@media screen {
+  :root[data-theme="dark"]{color-scheme:dark;--paper:#111c1a;--ink:#eee9d8;--muted:#aebfb4;--gold:#dfbc7c;--line:#3d5047;--red:#b65740;--green:#355f4f}
+  [data-theme="dark"] .hero-intro,[data-theme="dark"] .phase-description,[data-theme="dark"] .log p,[data-theme="dark"] .hand-text,[data-theme="dark"] .card-joke,[data-theme="dark"] .card-mirror{color:#b8c7ba}
+  [data-theme="dark"] .phase-tag{color:#d6bf85}
+  [data-theme="dark"] .family-badge i{color:color-mix(in srgb,var(--family),white 30%)}
+  [data-theme="dark"] .hero h1 em{color:#dcba80}
+  [data-theme="dark"] .hero-art{background:radial-gradient(ellipse,#334434 0,transparent 68%)}
+  [data-theme="dark"] .orbit{border-color:#4e6150}
+  [data-theme="dark"] .object-card,[data-theme="dark"] .hero-art .object-card:last-of-type,[data-theme="dark"] .hand-card{background:#1e2e27;border-color:#73866d}
+  [data-theme="dark"] .hand-card.trick{background:#302e23;border-color:#bea979}
+  [data-theme="dark"] .card-bottom{border-color:#4d604c}
+  [data-theme="dark"] .card-art{color:color-mix(in srgb,var(--family),white 25%)}
+  [data-theme="dark"] .object-card.selected,[data-theme="dark"] .hand-card.selected{background:#304b37;outline-color:#dfbc7c}
+  [data-theme="dark"] .player.current,[data-theme="dark"] .role-box{background:#203329;box-shadow:inset 0 3px #dfbc7c;border-color:#4e6450}
+  [data-theme="dark"] .role-box p{color:#c1cfbd}
+  [data-theme="dark"] .suspicion span{background:#455345}
+  [data-theme="dark"] .suspicion span.filled{background:#dfbc7c}
+  [data-theme="dark"] .suspicion.wanted span.filled{background:#e6977d}
+  [data-theme="dark"] select,[data-theme="dark"] input{background:#1e2e27;border-color:#72816c;color:#eee9d8}
+  [data-theme="dark"] .button{background:#355f4f;color:#fff5de;border-color:#779578}
+  [data-theme="dark"] .button:hover{background:#47785f}
+  [data-theme="dark"] .button.secondary{background:transparent;color:#eee9d8;border-color:#86977f}
+  [data-theme="dark"] .button.secondary:hover{background:#2d4333}
+  [data-theme="dark"] .button.danger{background:#934932;color:#fff3df;border-color:#d38e71}
+  [data-theme="dark"] .round-dot.active{background:#dfbc7c;color:#111c1a;border-color:#dfbc7c}
+  [data-theme="dark"] .coach{background:#263b2c;border-color:#dfbc7c}
+  [data-theme="dark"] .coach small{color:#c2d0bb}
+  [data-theme="dark"] .privacy{border-color:#6e8266}
+  [data-theme="dark"] .privacy .seal,[data-theme="dark"] .rank-list .place,[data-theme="dark"] .intro-notes b{color:#dfbc7c}
+  [data-theme="dark"] dialog{border-color:#7c906f}
+}
