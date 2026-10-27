@@ -1,8 +1,8 @@
 {
   "name": "il-mercato-nero-delle-fiabe",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
-  "description": "Prototipo offline delle regole base 0.4",
+  "description": "Prototipo offline delle regole 0.5",
   "scripts": {
     "test": "node --test tests/game.test.js",
     "simulate": "node tests/simulate.js",

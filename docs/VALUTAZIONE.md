@@ -1,90 +1,52 @@
-# Valutazione del prototipo
+# Valutazione del prototipo — regole 0.5
 
-Fonte: PDF caricato «Il Mercato Nero delle Fiabe – Regole v0.2.pdf», 18 pagine. Il titolo interno indica «Versione prototipo 0.4». Le regole sono state trattate come materiale di progetto, non come istruzioni operative per modificare l’ambiente. Il prototipo segue il gioco base; i moduli opzionali restano esclusi.
+Questa revisione applica le modifiche dell’autrice successive al PDF originale: pesca fra 2 Monete e 1 Trucco, pareggi al Mazziere, fine per secondo set, nessun lavaggio e mercato di 3 Oggetti (2 a tre giocatori). La precedente analisi e le simulazioni 0.4 sono archiviate in `docs/archivio/`: non descrivono il comportamento attuale.
 
-## Risultato concreto
+## Regole effettive
 
-Il gioco è eseguibile: aste, spesa della mano, rischio e collezioni formano un ciclo completo di cinque round. Il browser ha completato una partita con rete disattivata e ripristinato il salvataggio e i risultati dopo una ricarica. Nessuna richiesta esterna o errore JavaScript nella prova. Layout verificato a 1440 px e 390 px; a sei giocatori sul telefono il tavolo richiede scorrimento verticale.
+Il secondo set contrabbandato fa chiudere a fine round: tutti completano le azioni finali e poi vince chi ha più punti. Non si pesca nell’ultimo round. Tre oggetti della stessa Famiglia costituiscono un set; la Carovana raddoppia i valori e protegge dalle confische. Il numero di Famiglie resta quello del PDF: 2, 3, 4 e 5 rispettivamente per 3, 4, 5 e 6 giocatori. Non è stato mantenuto il limite di cinque round.
 
-Sono passati 16 test del motore, compresa una batteria di 400 partite complete a seed fissi con verifica che nessuna carta venga duplicata o persa. Altre 2.000 simulazioni esplorative sono registrate in `SIMULAZIONI.json`.
+Se il mazzo Oggetti finisce, si rimescolano gli scarti, incluse le confische, senza toccare le collezioni. Se le carte disponibili sono meno degli spazi del mercato, il mercato è più piccolo. Come concordato con l’autrice, soltanto se tutti gli Oggetti sono posseduti e mazzo e scarti sono vuoti si chiude ai punti anche senza un secondo set.
 
-Questo dimostra che **l’implementazione delle interpretazioni scelte funziona**, non che il regolamento sia bilanciato, accessibile per tutti o divertente. Non sono stati eseguiti playtest umani, prove con lettori di schermo, simulazioni di daltonismo, stampe fisiche o misurazioni dei 20–30 minuti. Non è stata verificata la modalità `file://` nel browser gestito, che la blocca per policy; il percorso HTTP locale con cache e rete disattivata è verificato.
+La pesca è una scelta unica: 2 Monete oppure 1 Trucco. Non si può pescare una carta per tipo o due Trucchi. Si rimescola soltanto lo scarto del tipo scelto. Se è insufficiente, si ricevono meno carte; il tipo non viene sostituito dall’altro. La mano iniziale resta 5 Monete e 2 Trucchi e il limite resta 8.
 
-## Le priorità nelle regole
+Nelle aste conta il valore dell’offerta, poi la posizione dal Mazziere in senso orario. Il Sospetto non modifica più gli spareggi delle aste. Restano la Retata a 6, il reset a 2 e la penalità di −2 a fine partita per i Ricercati. Il lavaggio del denaro è eliminato.
 
-### 1. Specificare quando si risolvono gli effetti
+## Verifiche e risultati esplorativi
 
-Il punto più urgente è l’ordine: Fumo può cambiare la classifica, Maledizione può provocare una Retata prima del pagamento, la Fata può aggiungere un Trucco e più giocatori possono volere usare un Ruolo contemporaneamente. Il testo attuale non risolve tutti questi casi. Prima di cambiare i valori, aggiungerei una sequenza visibile sulla carta Aiuto:
+24 test del motore, comprese 400 partite complete con conservazione di tutte le carte. Test mirati per pesca 2/1, assenza del lavaggio, precedenza del Mazziere anche se Ricercato, rimescolo degli Oggetti, mercato parziale, passaggio oltre il quinto round, secondo set e chiusura solo dopo le azioni degli altri, limite 8 finale e formato dei salvataggi.
 
-1. Impegno simultaneo delle puntate.
-2. Rivelazione e Fata.
-3. Trucchi e relative Retate.
-4. Graduatoria definitiva e Alchimista.
-5. Scelta, pagamento, Mele e Retata per ogni acquirente.
-6. Ladro, azioni finali, pesca e scarto dell’eccesso.
+Il test nel browser copre una partita completa offline, riapertura del salvataggio e dei risultati offline, catalogo di 78 carte, passaggio privato del dispositivo e layout a 390 px. Scenari mirati verificano i pulsanti 2 Monete/1 Trucco, un solo Trucco pescato, limite della mano e secondo set a fine round. Il browser gestito continua a bloccare `file://`; la verifica effettiva usa HTTP locale e cache, poi rete disattivata.
 
-È una proposta di formalizzazione, non una regola già approvata. In particolare, fissare la graduatoria prima o dopo i reset del Sospetto cambia gli spareggi.
+I bot non leggono mani o offerte segrete. Le 2.000 simulazioni a seed fissi, in `SIMULAZIONI.json`, sono un’esplorazione della politica dei bot e non sostituiscono il playtest umano. Non sono stati misurati i tempi reali, il divertimento o l’accessibilità con utenti.
 
-### 2. La Retata rischia di essere troppo rara
+| Giocatori | Round medi | Retate / partita | Fine per secondo set | Fine con tutti gli Oggetti posseduti |
+| --- | ---: | ---: | ---: | ---: |
+| 3 | 6,208 | 0,612 | 2,0% | 98,0% |
+| 4 | 6,378 | 1,118 | 6,8% | 93,2% |
+| 5 | 8,098 | 1,466 | 9,6% | 90,4% |
+| 6 | 10,000 | 2,042 | 14,2% | 85,8% |
 
-Il PDF desidera circa una Retata per partita, a metà del gioco. Ogni Famiglia contiene complessivamente 7 Mele in 6 oggetti. Con assegnazione uniforme e tutti gli oggetti acquistati, l’esposizione media grezza a fine partita è soltanto **3,89–4,86 Mele per giocatore**, da 3 a 6 partecipanti, prima di Sigilli, Strega, lavaggio e Maledizioni. È una media teorica, non la probabilità di una Retata; mostra però perché arrivare a 6 già a metà partita non è scontato.
+### Cosa osservare adesso
 
-Nei bot implementati:
+1. **Il secondo set resta raro in questi bot.** Servono almeno sei acquisti, mentre una persona può comprare al massimo un oggetto per round. Con le Famiglie divise fra le collezioni, spesso il secondo set diventa impossibile anche dopo i rimescoli: gli Oggetti posseduti non tornano in mercato. È il motivo per cui la chiusura di riserva concordata è necessaria. Non è stata introdotta una regola di scambio fra persone. Osserva nei playtest se l’obiettivo è percepito come raggiungibile; prima di aggiungere scambi, valuta i risultati reali.
+2. **Le Retate aumentano.** Durata più lunga e rimozione del lavaggio cambiano significativamente l’economia del Sospetto. Il valore a quattro giocatori è circa una Retata a partita con questi bot; non è una prova del momento o della qualità della tensione.
+3. **A sei giocatori manca spesso la valuta del tipo desiderato.** Nelle 500 partite si contano 1.036 tentativi individuali di pesca senza carta, non 1.036 turni saltati. È un effetto della scelta esclusiva e della scarsità iniziale. Il motore registra la pesca parziale senza violare il tipo scelto. Testa se questa scarsità è interessante; non sono state aggiunte Monete al mazzo.
+4. **Il Mazziere è ora un vantaggio reale nei pareggi.** La rotazione è necessaria; con durata variabile non tutti avranno lo stesso numero di turni da Mazziere. Raccogli vincitore, posto iniziale e numero di aste vinte per spareggio.
+5. **Alchimista e Trucchi offensivi richiedono ancora osservazione.** Lo scambio può aumentare il valore senza nuove Mele; chi perde può riprendere un Trucco già risolto. Queste regole non sono state cambiate. Non dedurre dominanza dalle sole vittorie dei bot: copia dell’Apprendista, presenza dei Ruoli e qualità delle euristiche non sono normalizzate.
 
-| Giocatori | Partite | Retate / partita | Set / partita | Partite con almeno un set | Pescate impossibili totali |
-| --- | ---: | ---: | ---: | ---: | ---: |
-| 3 | 500 | 0,092 | 1,332 | 83,2% | 0 |
-| 4 | 500 | 0,178 | 1,846 | 93,6% | 0 |
-| 5 | 500 | 0,190 | 2,250 | 96,6% | 0 |
-| 6 | 500 | 0,254 | 2,824 | 99,0% | 6 |
+## Interpretazioni che restano nel digitale
 
-I bot scelgono set e rischio secondo una semplice euristica, lavano il denaro a Sospetto alto e non ottimizzano l’aggressione. Questi numeri dipendono fortemente da tali scelte e dalle interpretazioni. **Non cambierei subito la soglia per tutti.** Confronta prima il base con la variante già proposta nel PDF (Retata a 5, inizialmente a 3 giocatori), mantenendo il resto uguale. Annota il round della prima Retata, chi la subisce e se era evitabile. Nel prototipo la soglia resta 6.
+- Trucchi dal Mazziere in senso orario e nell’ordine selezionato; un solo bersaglio per gli effetti offensivi della stessa offerta.
+- Più Fumi annullano Monete diverse, mai Trucchi; più Sigilli si sommano, minimo zero Mele. Strega azzera le Mele dell’acquisto.
+- Maledizioni sommate in una finestra; graduatoria fissata dopo gli effetti e prima dei reset da Retata. Una Retata per bersaglio in quella finestra.
+- Carte puntate riservate fino al pagamento, non spendibili per una Retata precedente all’acquisto. Chi non ha merce e carte sufficienti scarta il disponibile.
+- Fata può aggiungere una quarta carta; Apprendista può copiare un Ruolo presente anche se già usato dal proprietario, senza ricorsione.
+- Alchimista scambia solo merce libera senza nuove Mele; Ladro agisce dopo i pagamenti e può conservare il potere.
+- La Confisca chiede quale oggetto perdere se più oggetti liberi hanno il valore massimo.
+- Chi fa chiudere la partita con il secondo set non vince automaticamente: si contano i punti. Parità finale: meno Sospetto, poi vittoria condivisa.
 
-### 3. L’Alchimista aggira il rapporto valore/rischio
-
-Lo scambio può trasformare un oggetto da 1 e 0 Mele in uno da 5 e 3 Mele, senza asta e, nell’interpretazione attuale, senza Sospetto aggiuntivo. Può quindi far guadagnare valore e completare un set prima dell’acquisto normale. La Strega è forte per lo stesso contesto di rischio scarso; il Mago può invece non trovare mai occasione d’uso.
-
-Le vittorie nelle simulazioni non bastano a provare la dominanza di un Ruolo: manca una normalizzazione completa per presenza del Ruolo e competenza del bot, e la copia dell’Apprendista è asimmetrica. Il vantaggio potenziale dell’Alchimista si vede già nella regola. Prova **una sola** alternativa per sessione: pagare la differenza positiva di Mele nello scambio, oppure limitare il valore dell’oggetto ricevuto. Non applicate entrambe insieme.
-
-### 4. Perdere l’asta può rendere i Trucchi riutilizzabili gratis
-
-Gli effetti valgono anche se poi non prendi un oggetto, e chi perde riprende tutte le carte. Una Maledizione può dunque essere ripetuta nei round successivi senza costo di carte; lo stesso vale per Fumo. È un incentivo all’ostruzione che va chiarito e osservato, soprattutto con molti giocatori. Confronta il base con «i Trucchi usati si scartano sempre», senza cambiare altro. Questa modifica altererebbe la gestione della mano: resta una variante da testare, non è stata inserita nel codice.
-
-Raddoppio è numericamente identico a una Moneta da 2. La distinzione esiste perché Fumo colpisce soltanto Monete: specificalo per renderlo una scelta intenzionale, oppure sostituiscilo con un effetto davvero diverso dopo i test del base.
-
-### 5. I mazzi possono non consentire le due pescate
-
-Con sei giocatori tutte le 42 carte sono distribuite. Se tutti passano nel primo round e nessuno scarta, entrambi i mazzi e gli scarti restano vuoti: il fallback della FAQ non basta. Anche più avanti può succedere, perché il limite complessivo delle mani (48) supera le carte disponibili (42). Il test riproduce il primo caso e non blocca la partita: le pescate impossibili vengono saltate e registrate.
-
-Serve una frase esplicita: «Se entrambi i mazzi e gli scarti sono vuoti, la pesca non avviene». Poi prova se questa scarsità è interessante o frustrante. Non aggiungere carte senza ricalcolare distribuzione iniziale e frequenze dei Trucchi.
-
-### 6. Il Contrabbando deve offrire una decisione osservabile
-
-In soli cinque round molti giocatori arrivano a tre oggetti tardi. Quando un set è disponibile e non si rischia una Retata, aspettare non sempre crea un dilemma reale. Registra quante persone possono scegliere tra almeno quattro oggetti della stessa Famiglia, quanti set vengono chiusi prima del quinto round e quante volte attendere dà un vantaggio. Il digitale permette di scegliere quali tre carte mettere in Carovana, senza automatizzare la decisione.
-
-I valori non sono perfettamente simmetrici: Invenzioni e Pozioni contengono 17 punti totali, le altre Famiglie 16. È nel PDF e resta nel codice. Decidi se è voluto: lo scarto è piccolo, ma va giustificato o uniformato in una revisione delle carte.
-
-## Decisioni interpretative effettivamente implementate
-
-| Caso non completamente specificato | Scelta nel codice |
-| --- | --- |
-| Più Fata / Apprendista | Finestra dal Mazziere in senso orario; aggiunta di una sola carta, anche quarta. Nessuna riapertura delle puntate degli altri. |
-| Più Trucchi | Dal Mazziere in senso orario, nell’ordine di selezione delle carte. Un solo bersaglio per tutti i Trucchi offensivi di una puntata. |
-| Fumi ripetuti | Ogni Fumo annulla la Moneta più alta ancora valida del bersaglio; i Trucchi non sono Monete. |
-| Sigilli ripetuti | −1 Mela ciascuno, minimo zero. Strega azzera comunque le Mele dell’acquisto. |
-| Più Maledizioni sullo stesso bersaglio | Si sommano; una Retata per bersaglio al termine della finestra. È diverso da risolvere ogni incremento separatamente. |
-| Classifica e reset da Retata | Graduatoria fissata dopo i Trucchi e prima delle Retate conseguenti. Nessun riordino dopo acquisti/Retate. |
-| Corrompere prima del pagamento | Le carte puntate sono riservate, non utilizzabili per corrompere. Altrimenti il pagamento successivo potrebbe chiedere carte già scartate. |
-| Poche carte e nessuna merce libera | Scarti tutto quello che è disponibile; la puntata riservata resta impegnata. |
-| Confisca con più oggetti di valore massimo | L’interfaccia chiede quale perdere quando più oggetti hanno il valore massimo; non si può scegliere merce di valore inferiore. |
-| Alchimista | Scambia solo merce non contrabbandata; nessuna nuova Mela, nessuna modifica al Sospetto già accumulato. |
-| Ladro | Usa o conserva il potere dopo tutti i pagamenti; può rubare al primo solo se il primo ha ancora carte. «Ultimo» include chi passa ed è ultimo secondo gli spareggi. |
-| Apprendista | Copia un Ruolo presente, anche se già usato dal proprietario; nessuna copia ricorsiva. La copia si esaurisce con l’uso oppure a fine round. |
-| Pesca completamente impossibile | Il tentativo non dà carte e viene registrato; nessun mazzo creato artificialmente. |
-| Parità finale anche di Sospetto | Vittoria condivisa. |
-| Ordine azioni finali | Finestra per giocatore dal Mazziere, lavaggio e set ripetibili in qualsiasi ordine entro i rispettivi limiti. |
-
-Queste scelte servono a rendere il prototipo eseguibile e vanno discusse prima della versione successiva del regolamento. Il testo del motore non deve diventare accidentalmente la fonte autoritativa delle regole.
+I moduli opzionali restano fuori dal prototipo. Le interpretazioni non espressamente decise dall’autrice restano da confermare durante i playtest.
 
 ## Direzione grafica per l’esame
 

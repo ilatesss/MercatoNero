@@ -1,6 +1,6 @@
 # Il Mercato Nero delle Fiabe
 
-Prototipo digitale giocabile, in italiano, del gioco di carte. Basato sul PDF «Il Mercato Nero delle Fiabe – Regole v0.2», che nel corpo descrive la **versione 0.4**. Nessun framework, dipendenza JavaScript, account, CDN o font remoto.
+Prototipo digitale giocabile, in italiano, del gioco di carte. Basato sul PDF «Il Mercato Nero delle Fiabe – Regole v0.2», che nel corpo descrive la versione 0.4. Le **regole attuali 0.5** applicano le successive modifiche dell’autrice. Nessun framework, dipendenza JavaScript, account, CDN o font remoto.
 
 ## Giocare
 
@@ -23,7 +23,18 @@ Apri l’indirizzo del server nel tuo browser. Alla prima apertura il service wo
 
 ## Cosa è implementato
 
-Gioco base di 5 round per 3–6 giocatori: 30 Oggetti, composizioni esatte di Monete e Trucchi, Famiglie variabili, aste segrete, spareggi, pagamento dei soli acquirenti, quattro Trucchi, sei Ruoli una volta per partita, Sospetto, Retate, Confisca, lavaggio, scelta dei tre oggetti da contrabbandare, due mazzi e scarti separati, pesca a scelta con fallback e limite di 8 carte. La Fata può portare la puntata a quattro carte. Parità finale assoluta: vittoria condivisa.
+Gioco per 3–6 giocatori, senza limite fisso di round: 30 Oggetti, composizioni esatte di Monete e Trucchi, Famiglie variabili, aste segrete, spareggi, pagamento dei soli acquirenti, quattro Trucchi, sei Ruoli una volta per partita, Sospetto, Retate, Confisca, scelta dei tre oggetti da contrabbandare, due mazzi e scarti separati, scelta atomica fra 2 Monete e 1 Trucco e limite di 8 carte. La Fata può portare la puntata a quattro carte. Parità nelle aste: Mazziere, poi ordine del tavolo in senso orario, senza confrontare il Sospetto. Parità finale di punti: meno Sospetto, poi vittoria condivisa.
+
+### Revisione 0.5
+
+- **Mercato:** 3 Oggetti esposti con 4–6 giocatori; 2 Oggetti con 3 giocatori. I set restano di 3 oggetti della stessa Famiglia.
+- **Pesca:** scegli una volta per round fra **2 Monete oppure 1 Trucco**. Non è consentita una pesca mista. Si rimescola soltanto lo scarto del mazzo scelto; se non basta ricevi meno carte, senza sostituirle con carte dell’altro tipo.
+- **Pareggi nelle aste:** il Mazziere ha la precedenza, poi si segue l’ordine del tavolo. Il Sospetto conserva gli altri effetti (Retata e penalità finale).
+- **Fine:** il secondo set contrabbandato da un giocatore fa chiudere il mercato **a fine round**. Gli altri completano le azioni finali, poi si contano i punti: chi fa chiudere non è automaticamente il vincitore. Non si effettua la pesca finale.
+- **Riciclo:** se il mazzo Oggetti finisce si rimescolano gli Oggetti scartati, compresi quelli confiscati. Se non bastano si espone un mercato più piccolo. Solo quando anche gli scarti sono vuoti e tutti gli Oggetti sono nelle collezioni si chiude ai punti senza attendere il secondo set.
+- **Nessun lavaggio del denaro:** l’azione è rimossa da motore, bot e interfaccia.
+
+La revisione cambia il formato dei salvataggi. Le partite 0.4 restano conservate separatamente nel browser; occorre iniziare una nuova partita per usare le nuove regole. La cache offline è aggiornata alla revisione 0.5.
 
 I moduli Eventi, poteri passivi e Trucchi extra non sono implementati. Le decisioni prese per colmare le ambiguità sono esplicite nella guida dell’app e in [VALUTAZIONE.md](docs/VALUTAZIONE.md). Non è una trascrizione definitiva approvata del regolamento.
 
@@ -36,7 +47,7 @@ npm test
 node tests/simulate.js
 ```
 
-Non serve `npm install`. `npm test` esegue 16 test, tra cui 400 partite complete con invarianti di conservazione delle carte. `simulate.js` esegue altre 2.000 partite (500 per numerosità); risultato conservato in [SIMULAZIONI.json](docs/SIMULAZIONI.json). Sono prove software ed esplorazioni euristiche, non playtest umani.
+Non serve `npm install`. `npm test` esegue 24 test, tra cui 400 partite complete con invarianti di conservazione delle carte. `simulate.js` esegue altre 2.000 partite (500 per numerosità); risultato conservato in [SIMULAZIONI.json](docs/SIMULAZIONI.json). Sono prove software ed esplorazioni euristiche, non playtest umani. Le simulazioni della vecchia versione sono conservate in `docs/archivio/`.
 
 Test browser opzionale con Playwright Python e Chromium già installati nell’ambiente, mentre il server è attivo:
 
@@ -44,7 +55,7 @@ Test browser opzionale con Playwright Python e Chromium già installati nell’a
 python3 tests/browser_smoke.py
 ```
 
-Verifica: partita completa offline, ricarica offline della partita e dei risultati, catalogo di 78 carte, passaggio delle mani, assenza di overflow a 390 px, errori JavaScript e richieste esterne. Genera screenshot e PDF in `docs/`. I rami di Ruolo non incontrati nella singola partita browser sono coperti dai test del motore; non è una matrice cross-browser.
+Verifica: partita completa offline, ricarica offline della partita e dei risultati, catalogo di 78 carte, passaggio delle mani, assenza di overflow a 390 px, errori JavaScript e richieste esterne. Genera screenshot e PDF in `docs/`. Verifica anche la scelta di pesca 2/1, la chiusura per secondo set a fine round, l’assenza del lavaggio e la conservazione dei salvataggi precedenti. I rami di Ruolo non incontrati nella singola partita browser sono coperti dai test del motore; non è una matrice cross-browser.
 
 ## Struttura
 

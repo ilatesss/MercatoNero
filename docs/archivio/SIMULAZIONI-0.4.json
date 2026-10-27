@@ -1,0 +1,81 @@
+{
+  "method": "500 seed per numerosità, stessi bot euristici per tutti; nessuna inferenza sul divertimento o sulla dominanza dei Ruoli.",
+  "results": [
+    {
+      "players": 3,
+      "games": 500,
+      "raidsPerGame": 0.092,
+      "setsPerGame": 1.332,
+      "gamesWithSetPercent": 83.2,
+      "passesPerGame": 1.448,
+      "impossibleDraws": 0,
+      "meanWinningScore": 17.068,
+      "rolesUsedPercent": 67.93333333333334,
+      "roleWins": {
+        "thief": 77.5,
+        "alchemist": 117.5,
+        "mage": 68,
+        "witch": 97.5,
+        "fairy": 57,
+        "apprentice": 82.5
+      }
+    },
+    {
+      "players": 4,
+      "games": 500,
+      "raidsPerGame": 0.178,
+      "setsPerGame": 1.846,
+      "gamesWithSetPercent": 93.6,
+      "passesPerGame": 1.94,
+      "impossibleDraws": 0,
+      "meanWinningScore": 19.366,
+      "rolesUsedPercent": 72.15,
+      "roleWins": {
+        "witch": 113,
+        "mage": 68,
+        "alchemist": 127.5,
+        "thief": 62,
+        "fairy": 65,
+        "apprentice": 64.5
+      }
+    },
+    {
+      "players": 5,
+      "games": 500,
+      "raidsPerGame": 0.19,
+      "setsPerGame": 2.25,
+      "gamesWithSetPercent": 96.6,
+      "passesPerGame": 2.388,
+      "impossibleDraws": 0,
+      "meanWinningScore": 20.308,
+      "rolesUsedPercent": 72.84,
+      "roleWins": {
+        "witch": 121.5,
+        "alchemist": 120.5,
+        "apprentice": 86.5,
+        "fairy": 56.5,
+        "mage": 51,
+        "thief": 64
+      }
+    },
+    {
+      "players": 6,
+      "games": 500,
+      "raidsPerGame": 0.254,
+      "setsPerGame": 2.824,
+      "gamesWithSetPercent": 99,
+      "passesPerGame": 2.918,
+      "impossibleDraws": 6,
+      "meanWinningScore": 21.254,
+      "rolesUsedPercent": 76.1,
+      "roleWins": {
+        "mage": 42,
+        "thief": 48,
+        "witch": 147.5,
+        "alchemist": 132.5,
+        "apprentice": 79.5,
+        "fairy": 50.5
+      }
+    }
+  ]
+}

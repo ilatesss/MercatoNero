@@ -1,4 +1,4 @@
-/* Motore indipendente dal DOM. Regole base del PDF, versione interna 0.4. */
+/* Motore indipendente dal DOM. Regole 0.5: revisione dell'autrice. */
 (function (root) {
   'use strict';
   const FAMILIES = [
@@ -33,7 +33,7 @@
   function fail(condition,message){if(!condition)throw new Error(message);}
   class Game {
     constructor(config={}) {
-      this.seed=(config.seed??Date.now())>>>0; this.round=1; this.dealer=0; this.log=[]; this.stats={raids:0,sets:0,passes:0,emptyDraws:0};
+      this.seed=(config.seed??Date.now())>>>0; this.round=1; this.dealer=0; this.log=[]; this.stats={raids:0,sets:0,passes:0,emptyDraws:0,objectReshuffles:0};this.finishReason=null;this.closingPlayer=null;
       const count=config.count??4; fail(Number.isInteger(count)&&count>=3&&count<=6,'Servono da 3 a 6 giocatori.');
       this.mode=config.mode??'solo'; const roles=this.shuffle([...ROLES]);
       this.players=Array.from({length:count},(_,i)=>({name:(config.names?.[i]|| (i===0?'Tu':['Morgana','Gatto Cassiere','Rospino','Madama Ombra','Ser Merluzzo'][i-1])).slice(0,24),bot:this.mode==='solo'&&i>0,role:roles[i].id,used:false,copied:null,hand:[],stash:[],caravan:[],suspicion:0}));
@@ -48,8 +48,14 @@
     shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(this.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
     say(s){this.log.push(`R${this.round} · ${s}`);}
     order(){return this.players.map((_,i)=>(i+this.dealer)%this.players.length);}
+    marketSize(){return this.players.length===3?2:3;}
     beginRound(){
-      this.market=this.objects.splice(0,this.players.length-1); this.bids=this.players.map(()=>[]); this.targets=this.players.map(()=>null); this.committed=this.players.map(()=>false); this.cancelled=[]; this.ranking=null; this.witch=this.players.map(()=>false); this.washed=this.players.map(()=>false); this.drawn=0;
+      this.market=[];
+      while(this.market.length<this.marketSize()){
+        if(!this.objects.length){if(!this.removed.length)break;this.objects=this.shuffle(this.removed);this.removed=[];this.stats.objectReshuffles++;this.say('Il Mazziere rimescola gli Oggetti scartati.');}
+        this.market.push(this.objects.shift());
+      }
+      this.bids=this.players.map(()=>[]); this.targets=this.players.map(()=>null); this.committed=this.players.map(()=>false); this.cancelled=[]; this.ranking=null; this.witch=this.players.map(()=>false);
       this.players.forEach(p=>p.copied=null); this.phase='bid'; this.queue=this.order();this.actor=this.queue.shift();this.say('Il mercato apre. Puntate coperte.');
     }
     power(i){const p=this.players[i];return p.copied || (!p.used?p.role:null);}
@@ -57,7 +63,7 @@
     card(i,id){return this.players[i].hand.find(c=>c.id===id);}
     discard(i,ids){const p=this.players[i]; for(const id of ids){const c=this.card(i,id);fail(c,'Carta non disponibile.');p.hand.splice(p.hand.indexOf(c),1);(c.kind==='coin'?this.coinDiscard:this.trickDiscard).push(c);}}
     total(i){return this.bids[i].reduce((n,c)=>n+(this.cancelled.includes(c.id)?0:c.kind==='double'?2:c.value),0);}
-    rank(){return this.players.map((_,i)=>i).sort((a,b)=>this.total(b)-this.total(a)||this.players[a].suspicion-this.players[b].suspicion||((a-this.dealer+this.players.length)%this.players.length)-((b-this.dealer+this.players.length)%this.players.length));}
+    rank(){return this.players.map((_,i)=>i).sort((a,b)=>this.total(b)-this.total(a)||((a-this.dealer+this.players.length)%this.players.length)-((b-this.dealer+this.players.length)%this.players.length));}
     act(action,data={}){
       fail(this.phase!=='over','La partita è terminata.');const i=this.actor,p=this.players[i];
       if(action==='copy'){
@@ -106,23 +112,25 @@
         if(p.suspicion>=6)this.startRaids([i],'choose');else this.nextChoice();return;
       }
       if(this.phase==='end'){
-        if(action==='wash'){
-          const ids=data.ids||[];fail(!this.washed[i]&&p.suspicion>0&&ids.length===2&&new Set(ids).size===2&&ids.every(id=>this.card(i,id)),'Servono 2 carte, una volta per round.');this.discard(i,ids);p.suspicion--;this.washed[i]=true;this.say(`${p.name} lava il denaro: −1 Sospetto.`);return;
-        }
         if(action==='smuggle'){
           const ids=data.ids||[];const objects=ids.map(id=>p.stash.find(o=>o.id===id));fail(ids.length===3&&new Set(ids).size===3&&objects.every(Boolean)&&objects.every(o=>o.family===objects[0].family),'Scegli 3 oggetti della stessa Famiglia.');
-          p.stash=p.stash.filter(o=>!ids.includes(o.id));p.caravan.push(...objects);this.stats.sets++;this.say(`${p.name} contrabbanda un set ${objects[0].family}.`);return;
+          p.stash=p.stash.filter(o=>!ids.includes(o.id));p.caravan.push(...objects);this.stats.sets++;this.say(`${p.name} contrabbanda un set ${objects[0].family}.`);
+          if(p.caravan.length>=6&&this.closingPlayer===null){this.closingPlayer=i;this.say(`${p.name} completa il secondo set: questo è l’ultimo round.`);}return;
         }
-        fail(action==='done','Concludi le azioni oppure contrabbanda/lava il denaro.');
-        if(this.queue.length)this.actor=this.queue.shift();else {this.phase='draw';this.queue=this.order();this.actor=this.queue.shift();this.drawn=0;}return;
+        fail(action==='done','Concludi le azioni oppure contrabbanda un set.');
+        if(this.queue.length)this.actor=this.queue.shift();else if(this.closingPlayer!==null||(!this.objects.length&&!this.removed.length)){
+          this.finishReason=this.closingPlayer!==null?'two-sets':'objects-exhausted';this.finalTrims=this.order().filter(j=>this.players[j].hand.length>8);this.nextFinalTrim();
+        }else {this.phase='draw';this.queue=this.order();this.actor=this.queue.shift();}return;
       }
       if(this.phase==='draw'){
-        fail(action==='draw'&&['coin','trick'].includes(data.kind),'Scegli da quale mazzo pescare.');
-        const c=this.draw(data.kind);if(c)p.hand.push(c);else {this.stats.emptyDraws++;this.say(`${p.name} non può pescare: entrambi i mazzi e gli scarti sono vuoti.`);}this.drawn++;
-        if(this.drawn===2){if(p.hand.length>8)this.phase='trim';else this.nextDraw();}return;
+        fail(action==='draw'&&['coin','trick'].includes(data.kind),'Scegli 2 Monete oppure 1 Trucco.');
+        const amount=data.kind==='coin'?2:1;let drawn=0;
+        for(let k=0;k<amount;k++){const c=this.draw(data.kind);if(c){p.hand.push(c);drawn++;}else this.stats.emptyDraws++;}
+        this.say(`${p.name} sceglie ${data.kind==='coin'?'2 Monete':'1 Trucco'} e pesca ${drawn} ${drawn===1?'carta':'carte'}.${drawn<amount?' Il mazzo e il suo scarto sono esauriti.':''}`);
+        if(p.hand.length>8)this.phase='trim';else this.nextDraw();return;
       }
       if(this.phase==='trim'){
-        const ids=data.ids||[];fail(action==='trim'&&ids.length===p.hand.length-8&&new Set(ids).size===ids.length&&ids.every(id=>this.card(i,id)),'Scarta esattamente l’eccesso sopra 8 carte.');this.discard(i,ids);this.nextDraw();return;
+        const ids=data.ids||[];fail(action==='trim'&&ids.length===p.hand.length-8&&new Set(ids).size===ids.length&&ids.every(id=>this.card(i,id)),'Scarta esattamente l’eccesso sopra 8 carte.');this.discard(i,ids);if(this.finalTrims)this.nextFinalTrim();else this.nextDraw();return;
       }
       throw new Error('Azione non valida.');
     }
@@ -153,9 +161,10 @@
     startEnd(){this.phase='end';this.queue=this.order();this.actor=this.queue.shift();}
     draw(kind){
       const take=(k)=>{const pile=k==='coin'?'coins':'tricks',discard=k==='coin'?'coinDiscard':'trickDiscard';if(!this[pile].length&&this[discard].length){this[pile]=this.shuffle(this[discard]);this[discard]=[];}return this[pile].pop();};
-      return take(kind)||take(kind==='coin'?'trick':'coin');
+      return take(kind);
     }
-    nextDraw(){if(this.queue.length){this.phase='draw';this.actor=this.queue.shift();this.drawn=0;}else if(this.round===5){this.phase='over';this.say('Il mercato chiude. Si contano i punti.');}else{this.round++;this.dealer=(this.dealer+1)%this.players.length;this.beginRound();}}
+    nextDraw(){if(this.queue.length){this.phase='draw';this.actor=this.queue.shift();}else{this.round++;this.dealer=(this.dealer+1)%this.players.length;this.beginRound();}}
+    nextFinalTrim(){if(this.finalTrims.length){this.phase='trim';this.actor=this.finalTrims.shift();return;}this.phase='over';this.say(this.finishReason==='two-sets'?'Il mercato chiude: completato il secondo set. Si contano i punti.':'Il mercato chiude: tutti gli Oggetti sono nelle collezioni e gli scarti sono vuoti. Si contano i punti.');}
     score(i){const p=this.players[i];return p.stash.reduce((n,o)=>n+o.value,0)+2*p.caravan.reduce((n,o)=>n+o.value,0)-(p.suspicion>=4?2:0);}
     standings(){return this.players.map((p,i)=>({i,name:p.name,score:this.score(i),suspicion:p.suspicion})).sort((a,b)=>b.score-a.score||a.suspicion-b.suspicion);}
     available(i){const reserved=this.phase==='raid'&&this.resume==='alchemist'?this.bids[i].map(c=>c.id):[];return this.players[i].hand.filter(c=>!reserved.includes(c.id));}
@@ -185,13 +194,13 @@
       if(this.phase==='thief'){this.steal(true);return;}
       if(this.phase==='end'){
         const set=FAMILIES.map(f=>p.stash.filter(o=>o.family===f.id)).find(a=>a.length>=3);if(set){this.act('smuggle',{ids:set.slice(0,3).map(o=>o.id)});return;}
-        if(!this.washed[i]&&p.suspicion>=4&&low.length>=4){this.act('wash',{ids:low.slice(0,2).map(c=>c.id)});return;}this.act('done');return;
+        this.act('done');return;
       }
-      if(this.phase==='draw'){this.act('draw',{kind:this.random()<0.7?'coin':'trick'});return;}
+      if(this.phase==='draw'){const coinCount=this.coins.length+this.coinDiscard.length,trickCount=this.tricks.length+this.trickDiscard.length;this.act('draw',{kind:coinCount&&(this.random()<0.7||!trickCount)?'coin':'trick'});return;}
       if(this.phase==='trim'){this.act('trim',{ids:low.slice(0,p.hand.length-8).map(c=>c.id)});return;}
     }
-    toJSON(){return {...this,version:1};}
-    static restore(data){fail(data?.version===1&&Array.isArray(data.players)&&data.players.length>=3&&data.players.length<=6,'Salvataggio incompatibile.');return Object.assign(Object.create(Game.prototype),data);}
+    toJSON(){return {...this,version:2};}
+    static restore(data){fail(data?.version===2&&Array.isArray(data.players)&&data.players.length>=3&&data.players.length<=6,'Salvataggio incompatibile con le regole 0.5: inizia una nuova partita.');return Object.assign(Object.create(Game.prototype),data);}
   }
   const api={Game,FAMILIES,OBJECTS,TRICKS,ROLES};if(typeof module!=='undefined')module.exports=api;root.Mercato=api;
 })(typeof globalThis!=='undefined'?globalThis:this);

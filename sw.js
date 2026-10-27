@@ -1,5 +1,5 @@
 /* Cache esclusivamente locale. Nessuna telemetria o risorsa esterna. */
-const CACHE='mercatonero-offline-v1';
+const CACHE='mercatonero-offline-v2';
 const ASSETS=['./','./index.html','./style.css','./game.js','./app.js'];
 self.addEventListener('install',event=>{
   event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting()));
