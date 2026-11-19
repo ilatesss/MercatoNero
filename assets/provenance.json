@@ -1,0 +1,351 @@
+{
+  "source": "Il_Mercato_Nero_delle_Fiabe_Regolamento_e_Catalogo.pdf",
+  "author": "Ilaria Testa",
+  "method": "Immagini incorporate estratte senza ritocco o ricompressione; ordine di pagina e posizione. Le finestre SVG dell’interfaccia escludono i valori stampati per mantenere le regole 0.5.",
+  "assets": [
+    {
+      "id": "apprentice",
+      "path": "assets/roles/apprentice.jpeg",
+      "sourcePage": 8,
+      "width": 497,
+      "height": 685,
+      "sha256": "352f37c5225b7d9caec11e6a1380dcef3fa616a2c05da4409af3bc6984edce6f"
+    },
+    {
+      "id": "witch",
+      "path": "assets/roles/witch.jpeg",
+      "sourcePage": 8,
+      "width": 497,
+      "height": 685,
+      "sha256": "33b02e029a574b9a0a5a10c9beaf7e5f368283e8bafbb24ccf413239b8bd3a03"
+    },
+    {
+      "id": "fairy",
+      "path": "assets/roles/fairy.jpeg",
+      "sourcePage": 8,
+      "width": 494,
+      "height": 685,
+      "sha256": "5bf1fce01f532737f47ec4ed2bb1c1c417dfc0058c8dbae52de702b5918000f6"
+    },
+    {
+      "id": "alchemist",
+      "path": "assets/roles/alchemist.jpeg",
+      "sourcePage": 9,
+      "width": 495,
+      "height": 685,
+      "sha256": "4353c04c9210a949e91b52b2ac032569437c5367079de7b4b8159d62a7d02675"
+    },
+    {
+      "id": "thief",
+      "path": "assets/roles/thief.jpeg",
+      "sourcePage": 9,
+      "width": 498,
+      "height": 685,
+      "sha256": "870887da7706cce0263d108abb34f691c7305c53b90f38d1dd5c6fcb41b678b2"
+    },
+    {
+      "id": "mage",
+      "path": "assets/roles/mage.jpeg",
+      "sourcePage": 9,
+      "width": 495,
+      "height": 685,
+      "sha256": "4bdc65de40d8d8ecf92ea57bb2b40158cedc777177d63614a537c36978ae155d"
+    },
+    {
+      "id": "R0",
+      "path": "assets/objects/R0.jpeg",
+      "sourcePage": 10,
+      "width": 424,
+      "height": 423,
+      "sha256": "be3eadbdf922f82fa2af6bb7dad6f1287fe21c970392bab0596336d7b3f8c15b"
+    },
+    {
+      "id": "R1",
+      "path": "assets/objects/R1.jpeg",
+      "sourcePage": 10,
+      "width": 424,
+      "height": 424,
+      "sha256": "9f85d90b1a1a85eda7314da82ef6c55c8a577b1c7de5afbf2eb0ea3454e3421e"
+    },
+    {
+      "id": "R2",
+      "path": "assets/objects/R2.jpeg",
+      "sourcePage": 10,
+      "width": 424,
+      "height": 424,
+      "sha256": "e83dee6d3fb4ad8ef373db49940d496bd7c19d6209750dcf66bbaae855bba75e"
+    },
+    {
+      "id": "R3",
+      "path": "assets/objects/R3.jpeg",
+      "sourcePage": 10,
+      "width": 424,
+      "height": 424,
+      "sha256": "9ef1ff4d672da63814a23f6cb59037bff6fc459c33f52abd850e6afd30790b59"
+    },
+    {
+      "id": "R4",
+      "path": "assets/objects/R4.jpeg",
+      "sourcePage": 10,
+      "width": 424,
+      "height": 424,
+      "sha256": "4de1b42bc3b6c7a1dbad4ac67a00c802958b6f0d095fd395ef8f815fdbc28688"
+    },
+    {
+      "id": "R5",
+      "path": "assets/objects/R5.jpeg",
+      "sourcePage": 10,
+      "width": 424,
+      "height": 423,
+      "sha256": "e68fc54f6b87a7164cea6d8114002d143bb663d1959fbf12594fb363e08385f5"
+    },
+    {
+      "id": "A0",
+      "path": "assets/objects/A0.jpeg",
+      "sourcePage": 11,
+      "width": 424,
+      "height": 424,
+      "sha256": "8e1a4b6cb65a45a298d9105633c3c25ba9ed55aac9cbdee04f3321ef39e65629"
+    },
+    {
+      "id": "A1",
+      "path": "assets/objects/A1.jpeg",
+      "sourcePage": 11,
+      "width": 424,
+      "height": 424,
+      "sha256": "fb25220c4d6ce0f935b39a24c6cbd5488091a2c21eefee8fa1b0b37374af6753"
+    },
+    {
+      "id": "A2",
+      "path": "assets/objects/A2.jpeg",
+      "sourcePage": 11,
+      "width": 424,
+      "height": 424,
+      "sha256": "5a40004b1ee87077a689a4b7cf721a2eb2e711c4af15f4e207cf5c572ca3e395"
+    },
+    {
+      "id": "A3",
+      "path": "assets/objects/A3.jpeg",
+      "sourcePage": 11,
+      "width": 424,
+      "height": 423,
+      "sha256": "43c814259c17f70b07213f5837e1086ed10f42d24d4636df5c40aac47df34af9"
+    },
+    {
+      "id": "A4",
+      "path": "assets/objects/A4.jpeg",
+      "sourcePage": 11,
+      "width": 424,
+      "height": 424,
+      "sha256": "ccb2d5de917ca19862c73e7e1178ca27621cd8e3ec66c7c2308219e58b2661f3"
+    },
+    {
+      "id": "A5",
+      "path": "assets/objects/A5.jpeg",
+      "sourcePage": 11,
+      "width": 424,
+      "height": 423,
+      "sha256": "b0a698ec99632fb1217c368e11aa1766cc9e75be9737f49a876f7c7bd9c513cb"
+    },
+    {
+      "id": "P0",
+      "path": "assets/objects/P0.jpeg",
+      "sourcePage": 12,
+      "width": 423,
+      "height": 423,
+      "sha256": "c9d81031bc8a302950da00d4401929d7687780c57e42975ed303fc59b8c54a46"
+    },
+    {
+      "id": "P1",
+      "path": "assets/objects/P1.jpeg",
+      "sourcePage": 12,
+      "width": 423,
+      "height": 424,
+      "sha256": "e1a15eb9ed4fd8bf56c1162a44ac5007c73d6f483b6742dbdfe4365f0586b373"
+    },
+    {
+      "id": "P2",
+      "path": "assets/objects/P2.jpeg",
+      "sourcePage": 12,
+      "width": 423,
+      "height": 423,
+      "sha256": "0c7b91c8e9aa7bdb0790e106a27a507dba9e5b623a7a2fe61a3df4dfdebe8753"
+    },
+    {
+      "id": "P3",
+      "path": "assets/objects/P3.jpeg",
+      "sourcePage": 12,
+      "width": 423,
+      "height": 424,
+      "sha256": "d3891bc0fb811dd769db4d04f048a32c231bee6bcdc897260cc0ffd2edc66ff6"
+    },
+    {
+      "id": "P4",
+      "path": "assets/objects/P4.jpeg",
+      "sourcePage": 12,
+      "width": 423,
+      "height": 424,
+      "sha256": "0801a4986ba4bdab908ee0dff6eef0314a87c9915fff9dae3651dfea23b42308"
+    },
+    {
+      "id": "P5",
+      "path": "assets/objects/P5.jpeg",
+      "sourcePage": 12,
+      "width": 423,
+      "height": 424,
+      "sha256": "4ac1203beaefc6a73e23f53e7e1bb5b22d818eec90003ae1a10d5840e4542348"
+    },
+    {
+      "id": "L0",
+      "path": "assets/objects/L0.jpeg",
+      "sourcePage": 13,
+      "width": 424,
+      "height": 423,
+      "sha256": "8e34bc6e3bab5e787f0eaa6a7b67954e0d03ec3c575dc19a50099391bdce833a"
+    },
+    {
+      "id": "L1",
+      "path": "assets/objects/L1.jpeg",
+      "sourcePage": 13,
+      "width": 424,
+      "height": 424,
+      "sha256": "8ad1266e25678b8b7a78f21203f78f6c51f321a74a0dfbc83e34d3606175b0f2"
+    },
+    {
+      "id": "L3",
+      "path": "assets/objects/L3.jpeg",
+      "sourcePage": 13,
+      "width": 424,
+      "height": 424,
+      "sha256": "33d982e5e5926e0e38dc515489fc3ded5bea23483a0b02a97a83e1ee7999a490"
+    },
+    {
+      "id": "L2",
+      "path": "assets/objects/L2.jpeg",
+      "sourcePage": 13,
+      "width": 424,
+      "height": 423,
+      "sha256": "339dbd3f893265386dbff01fab54ffcd7832ffee17917943c5ec4efdec35f7b2"
+    },
+    {
+      "id": "L4",
+      "path": "assets/objects/L4.jpeg",
+      "sourcePage": 13,
+      "width": 424,
+      "height": 424,
+      "sha256": "0859c4cf7db4176b5c449bd9d4f3c1405b5df6fcc43fc6ed5eb8e7b60eeae207"
+    },
+    {
+      "id": "L5",
+      "path": "assets/objects/L5.jpeg",
+      "sourcePage": 13,
+      "width": 424,
+      "height": 424,
+      "sha256": "a8ff669c65319934b838c94fc6937414ece852484cadc4aa9fdade47112887ea"
+    },
+    {
+      "id": "I0",
+      "path": "assets/objects/I0.jpeg",
+      "sourcePage": 14,
+      "width": 424,
+      "height": 423,
+      "sha256": "45a79f9ce3ba7334e412f21375ea78c48289fdce77ceb7ba36139a0124437479"
+    },
+    {
+      "id": "I1",
+      "path": "assets/objects/I1.jpeg",
+      "sourcePage": 14,
+      "width": 424,
+      "height": 424,
+      "sha256": "23e4acb45add58dad2e0b7eae4da7ddc029ae8cc1827a3504cbb2b7ce2e316d4"
+    },
+    {
+      "id": "I2",
+      "path": "assets/objects/I2.jpeg",
+      "sourcePage": 14,
+      "width": 424,
+      "height": 424,
+      "sha256": "e71c1b074df5da38e4617ea3bf2ce73626089c8982c185f6ca309d0837bee794"
+    },
+    {
+      "id": "I3",
+      "path": "assets/objects/I3.jpeg",
+      "sourcePage": 14,
+      "width": 424,
+      "height": 423,
+      "sha256": "9d96d291675cf06b3745c3518b8676c29d0cb707c3afa0e9c412b379b4946e29"
+    },
+    {
+      "id": "I4",
+      "path": "assets/objects/I4.jpeg",
+      "sourcePage": 14,
+      "width": 424,
+      "height": 424,
+      "sha256": "8dba2c95f8a4fba4ece9a23879b1ca4562adaceb2511c319f7f5d91798592ab4"
+    },
+    {
+      "id": "I5",
+      "path": "assets/objects/I5.jpeg",
+      "sourcePage": 14,
+      "width": 424,
+      "height": 424,
+      "sha256": "0b24104566113f46e1e63fc01dbe2abd3091e7c0c6907ae129b4c65e1868d33c"
+    },
+    {
+      "id": "D0",
+      "path": "assets/objects/D0.jpeg",
+      "sourcePage": 15,
+      "width": 423,
+      "height": 423,
+      "sha256": "61a0df01910571338f4b67cbcfa7d671deedca12d603057f0075fa46021377ca"
+    },
+    {
+      "id": "D1",
+      "path": "assets/objects/D1.jpeg",
+      "sourcePage": 15,
+      "width": 423,
+      "height": 424,
+      "sha256": "92ec5977adf837451812b3543c462f609de370d15e20799a54b9308b70ec4be3"
+    },
+    {
+      "id": "D2",
+      "path": "assets/objects/D2.jpeg",
+      "sourcePage": 15,
+      "width": 423,
+      "height": 423,
+      "sha256": "85eca426ef572b52dea68a78226b62fb700e4190e4f8d9f29e8e32e671622f79"
+    },
+    {
+      "id": "D3",
+      "path": "assets/objects/D3.jpeg",
+      "sourcePage": 15,
+      "width": 423,
+      "height": 424,
+      "sha256": "92944d99ba1c39e594578054cc1cfebabf7fe2f77f5e95845669345d9691b58f"
+    },
+    {
+      "id": "D4",
+      "path": "assets/objects/D4.jpeg",
+      "sourcePage": 15,
+      "width": 423,
+      "height": 424,
+      "sha256": "6ebb6d5befdfdadd26f6793c7701330cbcc586052a96971f8db84e0dfcbdd0bc"
+    },
+    {
+      "id": "D5",
+      "path": "assets/objects/D5.jpeg",
+      "sourcePage": 15,
+      "width": 423,
+      "height": 424,
+      "sha256": "da46012c605af2e336f5f1aef645411ee04457539da3694b294609fd2ab0aab4"
+    },
+    {
+      "id": "carovana",
+      "path": "assets/scenes/carovana.png",
+      "sourcePage": 20,
+      "width": 1024,
+      "height": 1536,
+      "sha256": "9c08b4e175fa74b93501d700c4e01901ac6623c93ac621b68690c6679fa3aa9a"
+    }
+  ]
+}

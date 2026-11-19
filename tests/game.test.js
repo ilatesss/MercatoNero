@@ -157,3 +157,7 @@ test('200 partite Facile complete rispettano conservazione e regole di chiusura'
     assert.equal(g.phase,'over');assert.ok(g.players.every(p=>p.hand.length<=8));
   }
 });
+test('La nuova grafica aggiorna i nomi nei salvataggi senza cambiare valori o Mele',()=>{
+  const data=JSON.parse(JSON.stringify(fresh()));const o=data.objects[0];const current=OBJECTS.find(x=>x.id===o.id);o.name='Nome della prima edizione';o.joke='Battuta precedente';const value=o.value,apples=o.apples;
+  const g=Game.restore(data);const restored=g.objects.find(x=>x.id===o.id);assert.equal(restored.name,current.name);assert.equal(restored.joke,current.joke);assert.equal(restored.value,value);assert.equal(restored.apples,apples);
+});

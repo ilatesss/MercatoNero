@@ -4,7 +4,7 @@ Prototipo digitale giocabile, in italiano, del gioco di carte. Basato sul PDF «
 
 ## Giocare
 
-Apri `index.html` in un browser moderno. I file `index.html`, `style.css`, `game.js` e `app.js` devono restare nella stessa cartella. Questa modalità non richiede Internet; la persistenza di `localStorage` su `file://` dipende dal browser. Il Chromium gestito dell’ambiente blocca l’apertura di file locali per policy: qui la verifica effettiva è stata svolta usando il server locale e poi disattivando la rete.
+Apri `index.html` in un browser moderno. Conserva tutta la cartella: `index.html`, i file CSS e JavaScript e la directory `assets/` con i disegni originali devono restare insieme. Questa modalità non richiede Internet; la persistenza di `localStorage` su `file://` dipende dal browser. Il Chromium gestito dell’ambiente blocca l’apertura di file locali per policy: qui la verifica effettiva è stata svolta usando il server locale e poi disattivando la rete.
 
 Modalità consigliata per sviluppo e cache offline:
 
@@ -20,7 +20,7 @@ Apri l’indirizzo del server nel tuo browser. Alla prima apertura il service wo
 - **Tema scuro:** pulsante «Tema scuro / Tema chiaro» nella barra superiore. La prima scelta segue il sistema; la preferenza viene salvata nel browser. Carte, modali e controlli cambiano insieme. La stampa resta chiara.
 - **Stesso dispositivo:** 3–6 persone si passano il dispositivo. Una schermata copre il tavolo prima di ogni cambio di giocatore. I nomi sono predefiniti.
 - **Salvataggio:** automatico a ogni azione, nel browser. «Riprendi la partita salvata» ripristina anche una fase intermedia. Nessuna sincronizzazione o cifratura: non è un sistema contro chi ispeziona il codice o lo storage.
-- **Carte:** «Le carte» mostra 78 carte e permette la stampa domestica. PDF già generato: [Carte-playtest.pdf](docs/Carte-playtest.pdf).
+- **Carte:** «Le carte» mostra le 78 carte attive con le illustrazioni di Ilaria Testa e permette la stampa domestica. I sei Dolci Avvelenati sono in un’anteprima separata, esclusa dalla partita e dalla stampa attiva. PDF già generato: [Carte-playtest.pdf](docs/Carte-playtest.pdf).
 - **Risultati:** punteggio, Retate, set e registro esportabile JSON.
 
 ## Cosa è implementato
@@ -49,7 +49,7 @@ npm test
 node tests/simulate.js
 ```
 
-Non serve `npm install`. `npm test` esegue 28 test, tra cui 400 partite Normale e 200 Facile complete con invarianti di conservazione delle carte. `simulate.js` esegue altre 2.000 partite (500 per numerosità); risultato conservato in [SIMULAZIONI.json](docs/SIMULAZIONI.json). Sono prove software ed esplorazioni euristiche, non playtest umani. Il confronto dei livelli si riproduce con `node tests/difficulty.js` ed è in `docs/DIFFICOLTA.json`; metodo e limiti in [FACILE-E-TEMA.md](docs/FACILE-E-TEMA.md). Le simulazioni della vecchia versione sono conservate in `docs/archivio/`.
+Non serve `npm install`. `npm test` esegue 29 test, tra cui 400 partite Normale e 200 Facile complete con invarianti di conservazione delle carte. `simulate.js` esegue altre 2.000 partite (500 per numerosità); risultato conservato in [SIMULAZIONI.json](docs/SIMULAZIONI.json). Sono prove software ed esplorazioni euristiche, non playtest umani. Il confronto dei livelli si riproduce con `node tests/difficulty.js` ed è in `docs/DIFFICOLTA.json`; metodo e limiti in [FACILE-E-TEMA.md](docs/FACILE-E-TEMA.md). Le simulazioni della vecchia versione sono conservate in `docs/archivio/`.
 
 Test browser opzionale con Playwright Python e Chromium già installati nell’ambiente, mentre il server è attivo:
 
@@ -64,10 +64,15 @@ Verifica: partita completa offline, ricarica offline della partita e dei risulta
 | File | Scopo |
 | --- | --- |
 | `game.js` | Motore e dati, indipendenti dal DOM, generatore casuale riproducibile |
-| `app.js` | Interfaccia, salvataggio, passaggio del dispositivo, illustrazioni SVG locali |
+| `app.js` | Interfaccia, salvataggio, passaggio del dispositivo e collegamento ai disegni originali |
+| `artwork.js`, `artwork.css`, `assets/` | Tavole dell’autrice, identità grafica, palette e mappatura delle carte |
 | `style.css` | Layout responsive, palette, focus, stampa poker 63,5 × 88,9 mm |
 | `sw.js` | Cache per ricarica offline dopo la prima visita via HTTP locale o HTTPS |
 | `tests/` | Test di regole, simulazioni, prova nel browser |
 | `docs/VALUTAZIONE.md` | Critica delle regole e della grafica, scelte interpretative e piano di playtest |
 
-Le illustrazioni sono cinque simboli originali di Famiglia, riusati per i relativi oggetti; le 30 battute sono proposte redazionali nuove. Grafica RGB per schermo e stampa domestica, senza font incorporati, dorsi, plance, segnalini o esecutivi CMYK. Per l’esame serve ancora un progetto editoriale completo: dettagli e priorità nel documento di valutazione.
+Le illustrazioni, le battute e i Personaggi sono quelli del catalogo illustrato fornito da Ilaria Testa. Home, carte, Ruoli e Carovana usano le immagini originali; le decorazioni dell’interfaccia riprendono la plancia. Il tema scuro è viola, crema e lampone, con carte chiare. Provenienza e differenze rispetto alle regole del nuovo PDF: [GRAFICA-ORIGINALE.md](docs/GRAFICA-ORIGINALE.md).
+
+Sono state estratte 43 immagini dal catalogo, senza ritocco o ricompressione. I due PDF separati di carte superano il limite di trasferimento di 32 MiB e non sono stati acquisiti. Le grandi immagini mostrate in chat sono riferimenti per lo stile; non sono state scaricate come file autonomi.
+
+La grafica resta RGB per schermo e stampa domestica: il PDF generato non è un esecutivo CMYK con abbondanze. Le regole 0.5 restano quelle concordate; il nuovo regolamento contiene differenze che non sono state applicate automaticamente. I vecchi salvataggi restano compatibili e ricevono i nomi aggiornati delle carte.

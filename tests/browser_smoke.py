@@ -47,10 +47,14 @@ with sync_playwright() as pw:
     assert '2 Monete oppure 1 Trucco' in page.locator('#help').inner_text()
     page.locator('#help [data-close]').click()
     page.get_by_role('button', name='Le carte').click()
-    assert page.locator('#catalog-content .object-card').count() == 30
+    assert page.locator('#catalog-content > .catalog-grid .object-card').count() == 30
+    assert page.locator('.sweets-preview .object-card').count() == 6
+    assert page.locator('#catalog-content .role-print-image').count() == 6
     assert page.locator('#catalog-content .hand-card').count() == 42
     assert page.locator('#catalog-content .role-print').count() == 6
+    page.emulate_media(media='print')
     page.pdf(path=str(ROOT / 'docs' / 'Carte-playtest.pdf'), format='A4', print_background=True)
+    page.emulate_media(media='screen')
     page.locator('#catalog [data-close]').click()
     page.set_viewport_size({'width': 390, 'height': 844})
     page.clock.run_for(200)
@@ -58,6 +62,9 @@ with sync_playwright() as pw:
     page.screenshot(path=str(ROOT / 'docs' / 'anteprima-mobile.png'), full_page=True)
     page.set_viewport_size({'width': 1440, 'height': 1050})
     page.get_by_role('button', name='Apri il mercato').click()
+    page.wait_for_function("[...document.querySelectorAll('img:not([loading=lazy])')].every(i=>i.complete&&i.naturalWidth>0)")
+    assert page.locator('.market .original-art image').count() == 3
+    assert page.locator('.role-box .role-portrait').count() == 1
     page.screenshot(path=str(ROOT / 'docs' / 'anteprima-tavolo.png'), full_page=True)
     assert page.locator('#suggest-bid').is_visible()
     page.locator('#suggest-bid').click()
@@ -144,6 +151,8 @@ with sync_playwright() as pw:
     else:
         raise AssertionError('Partita UI bloccata')
     assert page.locator('.results').is_visible()
+    offline_assets=page.evaluate("async()=>{const paths=Object.values(MercatoArt.objects).concat(Object.values(MercatoArt.roles),MercatoArt.caravan);return Promise.all(paths.map(async p=>({path:p,ok:(await fetch(p)).ok})));}")
+    assert all(item['ok'] for item in offline_assets), offline_assets
     assert state['finishReason'] in ('two-sets', 'objects-exhausted')
     page.reload()
     page.get_by_role('button', name='Riprendi la partita salvata').click()
@@ -213,5 +222,5 @@ with sync_playwright() as pw:
     assert 'secondo set' in page.locator('.finish-reason').inner_text()
     assert errors == [], errors
     assert external == [], external
-    print(json.dumps({'passed': True, 'offline_reload': True, 'offline_full_game': True, 'local_privacy': True, 'mobile_no_overflow': True, 'catalog_cards': 78, 'dark_theme_persistence': True, 'suggested_bid_and_set': True, 'phases_seen': sorted(phases), 'javascript_errors': errors, 'external_requests': external}, indent=2))
+    print(json.dumps({'passed': True, 'offline_reload': True, 'offline_full_game': True, 'local_privacy': True, 'mobile_no_overflow': True, 'catalog_cards': 78, 'original_artwork_offline': True, 'sweets_preview': 6, 'dark_theme_persistence': True, 'suggested_bid_and_set': True, 'phases_seen': sorted(phases), 'javascript_errors': errors, 'external_requests': external}, indent=2))
     browser.close()

@@ -14,7 +14,7 @@ Nelle aste conta il valore dell’offerta, poi la posizione dal Mazziere in sens
 
 ## Verifiche e risultati esplorativi
 
-28 test del motore, comprese 400 partite Normale e 200 Facile complete con conservazione di tutte le carte. Test mirati per pesca 2/1, assenza del lavaggio, precedenza del Mazziere anche se Ricercato, rimescolo degli Oggetti, mercato parziale, passaggio oltre il quinto round, secondo set e chiusura solo dopo le azioni degli altri, limite 8 finale e formato dei salvataggi.
+29 test del motore, comprese 400 partite Normale e 200 Facile complete con conservazione di tutte le carte. Test mirati per pesca 2/1, assenza del lavaggio, precedenza del Mazziere anche se Ricercato, rimescolo degli Oggetti, mercato parziale, passaggio oltre il quinto round, secondo set e chiusura solo dopo le azioni degli altri, limite 8 finale e formato dei salvataggi.
 
 Il test nel browser copre una partita completa offline, riapertura del salvataggio e dei risultati offline, catalogo di 78 carte, passaggio privato del dispositivo e layout a 390 px. Scenari mirati verificano i pulsanti 2 Monete/1 Trucco, un solo Trucco pescato, limite della mano e secondo set a fine round. Il browser gestito continua a bloccare `file://`; la verifica effettiva usa HTTP locale e cache, poi rete disattivata.
 
@@ -48,22 +48,11 @@ La modalità Facile, gli aiuti e il tema scuro sono descritti in `FACILE-E-TEMA.
 
 I moduli opzionali restano fuori dal prototipo. Le interpretazioni non espressamente decise dall’autrice restano da confermare durante i playtest.
 
-## Direzione grafica per l’esame
+## Direzione grafica attuale
 
-Il mondo narrativo è una buona base: negozio notturno, merci difettose, un tono ironico che si presta a nomi e microtesti. La direzione proposta usa carta calda, verde bosco, serif per titoli e nomi, sans di sistema per regole e numeri funzionali, icone lineari e palette di Famiglia dal PDF. Evoca un catalogo clandestino senza sacrificare il pannello di gioco.
+Le illustrazioni provvisorie sono state sostituite con le tavole originali di Ilaria Testa. Home, Oggetti, Personaggi e Carovana riprendono il catalogo e l’estetica della plancia. La palette è crema e viola, con rosso lampone e oro; il tema scuro mantiene le carte chiare. Provenienza delle 43 immagini, scelte tipografiche, differenze di numeri e limiti di risoluzione sono descritti in [GRAFICA-ORIGINALE.md](GRAFICA-ORIGINALE.md).
 
-### Da completare prima della consegna
-
-1. **Un’identità per ogni oggetto.** Ora ci sono cinque icone di Famiglia riusate, non 30 illustrazioni uniche. Progetta una griglia illustrativa comune e silhouette specifiche: la Pantofola deve sembrare una pantofola, non lo specchio usato per tutta la Famiglia. Mantieni le forme/lettere come secondo livello separato dall’immagine.
-2. **Gerarchia provata alla dimensione reale.** Il PDF digitale stampa carte 63,5 × 88,9 mm con un margine interno di circa 4 mm. Controlla su carta il nome più lungo, regole dei Trucchi, numero di Mele e leggibilità da entrambi i lati. Il catalogo non garantisce una lettura in due secondi.
-3. **Dorsi, Ruoli e componenti di servizio.** Servono quattro dorsi riconoscibili anche senza colore, sei icone di Ruolo diverse, stato del potere usato, plance Sospetto, Carovane, segnalino Mazziere e carte Aiuto. Il PDF generato contiene solo i 78 fronti; i Ruoli sono ancora tipografici.
-4. **Accessibilità misurata.** Conserva colore + forma + lettera; evita che Mele e valore competano. I cinque colori del PDF non sono automaticamente abbastanza contrastati sul fondo carta, soprattutto giallo/arancione: testa i contrasti degli elementi essenziali, aggiungi contorni scuri e non affidare loro il testo. Prova scala di grigi, deuteranopia, ingrandimento e lettura con persone esterne. I pulsanti digitali hanno focus visibile e stati `aria-pressed`, ma non c’è una certificazione WCAG.
-5. **Tipografia riproducibile.** I font di sistema mantengono l’app indipendente dalla rete ma cambiano tra computer. Per un elaborato finale scegli e distribuisci legalmente font locali (es. una sans ad alta leggibilità e una serif per i titoli), verifica licenze e incorpora i font nel PDF finale. Le battute proposte vanno riviste con il tuo tono.
-6. **Produzione separata dal prototipo.** Il PDF generato dal browser è RGB, senza bleed o segni di taglio; non è un esecutivo di tipografia. Prepara un documento con 3 mm di abbondanza, profilo CMYK concordato con lo stampatore, immagini a 300 ppi quando raster, raggi angolari e prove fronte/retro. Non affidarti al browser per la prestampa definitiva.
-
-### Cosa portare alla discussione
-
-Mostra un percorso verificabile: problema di design → sistema visivo → prototipo in bianco e nero → playtest → cambiamenti motivati → mockup finale. Una pagina con tre versioni della stessa carta e il motivo delle differenze spesso racconta meglio il progetto di trenta carte rifinite senza prove. Uniforma anche la versione del regolamento: copertina, intestazioni e descrizione interna attualmente non coincidono.
+La stampa generata rimane destinata al playtest: per la consegna finale occorre una verifica fisica di leggibilità e un esecutivo con risoluzione, abbondanze e profilo colore concordati con lo stampatore. I due PDF di carte ad alta risoluzione superano il limite di trasferimento; le immagini attualmente usate sono quelle incorporate nel catalogo.
 
 ## Un primo playtest utile
 

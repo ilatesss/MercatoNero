@@ -2,18 +2,18 @@
 (function (root) {
   'use strict';
   const FAMILIES = [
-    {id:'R', name:'Reliquie maledette', shape:'◆', color:'#CC79A7', icon:'mirror', names:['Dente di Drago Usato','Pantofola Spaiata','Corona della Rana','Specchio Magico Adulatore','Mela Quasi Biologica','Anello del Troll Innamorato']},
-    {id:'I', name:'Invenzioni fregatura', shape:'■', color:'#0072B2', icon:'lamp', names:['Tappeto Volante Senza Freni','Stivali delle Sette Leghe, Taglia Piccola','Lampada del Genio Scrocco','Bacchetta con Telecomando','Calderone Autopulente Esplosivo','Palla di Cristallo con Pubblicità']},
-    {id:'P', name:'Pozioni truffa', shape:'●', color:'#D55E00', icon:'bottle', names:['Pozione Bellezza Scaduta','Elisir di Lunga Vita (a metà)',"Filtro d’Amore Generico",'Unguento Invisibilità Parziale','Veleno di Cortesia','Pozione Gigante Taglia Unica']},
-    {id:'A', name:'Animali parlanti difettosi', shape:'▲', color:'#E69F00', icon:'cat', names:['Grillo Parlante Muto','Lupo Cattivo Vegano',"Gallina dalle Uova d’Ottone",'Asino Oracolo, Sbaglia Sempre','Cavallo di Troia Gonfiabile','Drago da Compagnia Non Ancora Addestrato']},
-    {id:'L', name:'Libri maledetti', shape:'★', color:'#009E73', icon:'book', names:['Segnalibro Ipnotico','Dizionario dei Sortilegi Sbagliati','Libro delle Ombre, Edizione Tascabile','Atlante del Regno Non Aggiornato','Grimorio con Clausole in Piccolo','Enciclopedia Proibita in 12 Volumi']}
+    {id:'R', name:'Reliquie maledette', shape:'◆', color:'#CC79A7', icon:'mirror', names:['Dente di Drago Usato','Pantofola di Principessa Spaiata','Corona della Rana','Specchio Magico Adulatore','Fuso Incantato Spuntato','Anello del Troll Innamorato']},
+    {id:'I', name:'Invenzioni fregatura', shape:'■', color:'#76a6c5', icon:'lamp', names:['Tappeto Volante Senza Freni','Stivali delle Sette Leghe, Taglia Piccola','Lampada del Genio dello Scrocco','Bacchetta Magica con Telecomando','Calderone Autopulente Esplosivo','Sfera di Cristallo con Pubblicità']},
+    {id:'P', name:'Pozioni truffa', shape:'●', color:'#85bca5', icon:'bottle', names:['Pozione Bellezza Scaduta','Elisir di Lunga Vita (a metà)',"Filtro d’Amore Generico",'Unguento Invisibilità Parziale','Veleno di Cortesia','Pozione Gigante Taglia Unica']},
+    {id:'A', name:'Animali parlanti difettosi', shape:'▲', color:'#e1a13f', icon:'cat', names:['Grillo Parlante Muto','Lupo Cattivo Vegano',"Gallina dalle Uova di Ottone",'Asino Oracolo, Sbaglia Sempre','Topino Sarto della Mala','Drago da Compagnia Non Addomesticato']},
+    {id:'L', name:'Libri maledetti', shape:'★', color:'#759c62', icon:'book', names:['Segnalibro Ipnotico','Dizionario dei Sortilegi Sbagliati','Libro delle Ombre, Edizione Tascabile','Atlante del Regno Non Aggiornato','Grimorio con Clausole in Piccolo','Enciclopedia Proibita in 12 Volumi']}
   ];
   const JOKES = [
-    ['La garanzia è scaduta prima del drago.','Il principe cerca ancora l’altra.','Gracida quando menti. Anche quando dici la verità.','Sei bellissimo. Soprattutto al buio.','Tracce di maledizione. Può contenere semi.','Ti lascia. Poi torna. Poi ti lascia.'],
-    ['L’atterraggio è venduto separatamente.','Sette leghe. Una sola vescica.','Tre desideri, più spese di soggiorno.','Le pile non sono incluse. La maledizione sì.','Pulisce anche il soffitto. Aprendolo.','Il futuro arriva dopo trenta secondi di spot.'],
-    ['Toglie dieci anni. Dal flacone.','Vivi per sempre. Fino a mezzogiorno.','Funziona con chiunque. Purtroppo.','Nessuno vede i tuoi gomiti.','Per chi non sa mai come dire di no.','Cresci tu. I vestiti si arrangiano.'],
-    ['La coscienza finalmente tace.','Nonna, che tofu grande che hai!','La colazione vale meno del previsto.','Il futuro? Meglio chiedere a un mulo.','La sorpresa dura finché non si sgonfia.','Seduto. Seduto! Il villaggio no!'],
-    ['Non ricordi perché stavi leggendo.','Trasforma i nemici in mobili. Forse.','Il buio, ora in formato da viaggio.','Qui una volta c’era un castello.','L’anima si rinnova automaticamente.','Proibita soprattutto dalle poste.']
+    ['Il venditore lo dà per usato, il drago per smarrito.','L’altra pantofola è in perfette condizioni, a detta del cane.','Se ti sta larga, prova a gonfiare la gola.','«Sì, sei il più bello del reame. Ora paga.»','Non punge più, ma l’ultimo a provarlo non si è ancora svegliato.','Prima di provarlo sappi che il troll ha già prenotato la sala.'],
+    ['Decolla in un secondo e atterra al primo muro.','Sette leghe a passo, ma le dita vorrebbero scendere prima.','Tre desideri a rate. Il primo è rimborsare il genio.','Fa ogni magia tranne ritrovare il telecomando.','Si pulisce da solo e già che c’è si porta via la cucina.','Vedi il futuro, ma per i dettagli serve l’abbonamento premium.'],
+    ['Per un incarnato luminoso, purché ti piaccia il verde muffa.','Vivi per sempre, ma solo di mercoledì.','Ti fa innamorare di chiunque. Ma proprio chiunque.','Funziona benissimo, se ti nascondi soltanto dai gatti.','Prima di fare effetto, chiede se è un buon momento.','Crescono di un metro solo i piedi. Prendere o lasciare.'],
+    ['Ha la coscienza pulita perché non ha mai detto una parola.','Le case le butta giù ancora, ma le mangia solo se sono di paglia.','L’uovo è fresco, ma per romperlo serve un fabbro.','Sbaglia ogni profezia con la sicurezza di chi ci azzecca sempre.','Se ti prende le misure e non hai ordinato un abito, cambia quartiere.','Fa le fusa finché il divano non prende fuoco.'],
+    ['Da quando lo usi, «ancora una pagina» non è più una tua idea.','Controlla sempre due volte come si scrive «controincantesimo».','Le ombre entrano in tasca, le maledizioni no.','Il ponte sulla mappa c’è ancora. Nel fiume, a dire il vero.','Hai firmato anche l’anima, a pagina tre, nella riga microscopica.','Sono tutti vietati, ma il sette ti conviene lasciarlo chiuso.']
   ];
   const OBJECTS = FAMILIES.flatMap((f,k)=>f.names.map((name,i)=>({id:f.id+i, family:f.id, name, value: i===1 && ['I','P'].includes(f.id)?2:[1,1,2,3,4,5][i], apples:[0,0,1,1,2,3][i], joke:JOKES[k][i]})));
   const TRICKS = [
@@ -24,11 +24,11 @@
   ];
   const ROLES = [
     {id:'apprentice',name:'L’Apprendista Stregone',text:'Prima dell’asta, copia un altro Ruolo per questo round.'},
-    {id:'witch',name:'La Strega Contrabbandiera',text:'L’oggetto che prendi ha 0 Mele.'},
+    {id:'witch',name:'La Strega Furfante',text:'L’oggetto che prendi ha 0 Mele.'},
     {id:'fairy',name:'La Fata Ribelle',text:'Dopo la rivelazione, aggiungi una carta alla tua puntata.'},
-    {id:'alchemist',name:'L’Alchimista Truffaldino',text:'Prima della scelta, scambia un tuo oggetto con uno esposto.'},
+    {id:'alchemist',name:'Lo Speziale Losco',text:'Prima della scelta, scambia un tuo oggetto con uno esposto.'},
     {id:'thief',name:'Il Ladro di Sogni',text:'Se arrivi ultimo, ruba una carta a caso al primo.'},
-    {id:'mage',name:'Il Mago Corrotto',text:'Una volta, paga la Retata con 1 carta anziché 3.'}
+    {id:'mage',name:'La Maga Corrotta',text:'Una volta, paga la Retata con 1 carta anziché 3.'}
   ];
   function fail(condition,message){if(!condition)throw new Error(message);}
   class Game {
@@ -203,7 +203,7 @@
       if(this.phase==='trim'){this.act('trim',{ids:low.slice(0,p.hand.length-8).map(c=>c.id)});return;}
     }
     toJSON(){return {...this,version:2};}
-    static restore(data){fail(data?.version===2&&Array.isArray(data.players)&&data.players.length>=3&&data.players.length<=6,'Salvataggio incompatibile con le regole 0.5: inizia una nuova partita.');return Object.assign(Object.create(Game.prototype),{difficulty:'normal'},data);}
+    static restore(data){fail(data?.version===2&&Array.isArray(data.players)&&data.players.length>=3&&data.players.length<=6,'Salvataggio incompatibile con le regole 0.5: inizia una nuova partita.');const g=Object.assign(Object.create(Game.prototype),{difficulty:'normal'},data);for(const o of [...g.objects,...g.market,...g.removed,...g.players.flatMap(p=>[...p.stash,...p.caravan])]){const current=OBJECTS.find(x=>x.id===o.id);if(current){o.name=current.name;o.joke=current.joke;}}return g;}
   }
   const api={Game,FAMILIES,OBJECTS,TRICKS,ROLES};if(typeof module!=='undefined')module.exports=api;root.Mercato=api;
 })(typeof globalThis!=='undefined'?globalThis:this);
