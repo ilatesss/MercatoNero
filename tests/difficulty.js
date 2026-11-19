@@ -8,8 +8,7 @@ for(const count of [3,4,6])for(const difficulty of ['normal','easy']){
     const g=new Game({count,seed,difficulty});let steps=0;
     while(g.phase!=='over'&&steps++<5000){
       if(g.actor===0&&g.phase==='bid'){
-        const target=g.players.map((_,i)=>i).filter(i=>i!==0).sort((a,b)=>g.score(b)-g.score(a))[0];
-        g.act('bid',{ids:g.suggestedBid(0),target});
+        g.act('bid',{ids:g.suggestedBid(0)});
       }else g.botStep();
     }
     if(g.phase!=='over')throw Error('Partita bloccata');
@@ -18,4 +17,4 @@ for(const count of [3,4,6])for(const difficulty of ['normal','easy']){
   }
   results.push({players:count,difficulty,games,outrightWins:wins,sharedWins:shared,winOrSharePercent:100*(wins+shared)/games,meanScore:totalScore/games});
 }
-process.stdout.write(JSON.stringify({method:'Giocatore 0: due carte suggerite, altre azioni euristiche. Stessi 500 seed per confronto, senza carte o punti regalati. Non è una stima delle probabilità di vittoria di una persona.',results},null,2)+'\n');
+process.stdout.write(JSON.stringify({rules:'PDF-0.5-2026-11-19',method:'Giocatore 0: due carte suggerite, altre azioni euristiche. Stessi 500 seed per confronto, senza carte o punti regalati. Non è una stima delle probabilità di vittoria di una persona.',results},null,2)+'\n');

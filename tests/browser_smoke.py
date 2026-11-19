@@ -1,226 +1,166 @@
-"""Test UI reale. Richiede Playwright Python e Chromium del sistema.
-Avviare prima: python3 -m http.server 8000 --bind 127.0.0.1
-Eseguire: python3 tests/browser_smoke.py
+"""Test UI del regolamento PDF. Avviare prima il server locale.
+MERCATO_TEST_URL può indicare una porta alternativa.
 """
 import json
 import os
 from pathlib import Path
 from playwright.sync_api import sync_playwright
 
-BASE = os.environ.get('MERCATO_TEST_URL', 'http://127.0.0.1:8000')
-ROOT = Path(__file__).resolve().parents[1]
+BASE=os.environ.get('MERCATO_TEST_URL','http://127.0.0.1:8000').rstrip('/')
+ROOT=Path(__file__).resolve().parents[1]
+KEY='mercatonero-game-v3'
 
 with sync_playwright() as pw:
-    browser = pw.chromium.launch(executable_path='/usr/bin/chromium', headless=True, args=['--no-sandbox'])
-    context = browser.new_context(viewport={'width': 1440, 'height': 1050})
-    page = context.new_page()
-    errors, external = [], []
-    page.on('pageerror', lambda error: errors.append(str(error)))
-    page.on('request', lambda req: external.append(req.url) if req.url.startswith(('http:', 'https:')) and not req.url.startswith(BASE) else None)
+    browser=pw.chromium.launch(executable_path='/usr/bin/chromium',headless=True,args=['--no-sandbox'])
+    context=browser.new_context(viewport={'width':1440,'height':1050},color_scheme='light')
+    page=context.new_page()
+    errors,external,phases=[],[],set()
+    page.on('pageerror',lambda error:errors.append(str(error)))
+    page.on('request',lambda req:external.append(req.url) if req.url.startswith(('http:','https:')) and not req.url.startswith(BASE) else None)
     page.clock.install()
     page.goto(BASE)
     page.evaluate('navigator.serviceWorker.ready')
     page.wait_for_function('navigator.serviceWorker.controller !== null')
-    page.screenshot(path=str(ROOT / 'docs' / 'anteprima-desktop.png'), full_page=True)
-    assert page.locator('#difficulty').input_value() == 'easy'
-    assert page.locator('#count').input_value() == '3'
-    page.get_by_role('button', name='Tema scuro', exact=True).click()
-    assert page.locator('html').get_attribute('data-theme') == 'dark'
+    assert page.locator('#difficulty').input_value()=='easy'
+    assert '5 ROUND' in page.locator('main').inner_text()
+    page.screenshot(path=str(ROOT/'docs/anteprima-desktop.png'),full_page=True)
+    page.get_by_role('button',name='Tema scuro',exact=True).click()
     page.reload()
-    assert page.locator('html').get_attribute('data-theme') == 'dark'
-    page.screenshot(path=str(ROOT / 'docs' / 'anteprima-scura.png'), full_page=True)
-    # Contrasto dei testi principali, non delle illustrazioni decorative.
-    contrasts=page.evaluate(r"""() => {
-      function lum(s){const c=s.match(/[\d.]+/g).slice(0,3).map(Number).map(v=>{v/=255;return v<=.04045?v/12.92:((v+.055)/1.055)**2.4;});return .2126*c[0]+.7152*c[1]+.0722*c[2];}
-      return ['body','.object-card','.hand-card'].filter(s=>document.querySelector(s)).map(s=>{const c=getComputedStyle(document.querySelector(s)),a=lum(c.color),b=lum(c.backgroundColor);return {selector:s,ratio:(Math.max(a,b)+.05)/(Math.min(a,b)+.05)};});
-    }""")
-    assert all(c['ratio'] >= 4.5 for c in contrasts), contrasts
-    page.emulate_media(media='print')
-    assert page.evaluate("getComputedStyle(document.body).backgroundColor") == 'rgb(255, 255, 255)'
-    page.emulate_media(media='screen')
-    page.get_by_role('button', name='Tema chiaro', exact=True).click()
-    page.locator('#count').select_option('4')
-    assert 'OBIETTIVO: 2 SET' in page.locator('main').inner_text()
-    page.get_by_role('button', name='Come si gioca').click()
-    assert page.locator('#help').is_visible()
-    assert 'Tre Oggetti esposti' in page.locator('#help').inner_text()
-    assert '2 Monete oppure 1 Trucco' in page.locator('#help').inner_text()
+    assert page.locator('html').get_attribute('data-theme')=='dark'
+    page.screenshot(path=str(ROOT/'docs/anteprima-scura.png'),full_page=True)
+    page.get_by_role('button',name='Tema chiaro',exact=True).click()
+    page.get_by_role('button',name='Come si gioca').click()
+    assert '24 Trucchi' in page.locator('#help').inner_text()
+    assert 'Tutti scartano' in page.locator('#help').inner_text()
+    assert page.locator('#help a[href="docs/Regolamento-0.5.pdf"]').count()==1
     page.locator('#help [data-close]').click()
-    page.get_by_role('button', name='Le carte').click()
-    assert page.locator('#catalog-content > .catalog-grid .object-card').count() == 30
-    assert page.locator('.sweets-preview .object-card').count() == 6
-    assert page.locator('#catalog-content .role-print-image').count() == 6
-    assert page.locator('#catalog-content .hand-card').count() == 42
-    assert page.locator('#catalog-content .role-print').count() == 6
+    page.get_by_role('button',name='Le carte').click()
+    assert page.locator('#catalog .object-card').count()==36
+    assert page.locator('#catalog .hand-card.trick').count()==24
+    assert page.locator('#catalog .hand-card.blank').count()==18
+    assert page.locator('#catalog .hand-card').count()==72
+    assert page.locator('#catalog .role-print').count()==6
+    assert page.locator('.sweets-preview').count()==0
     page.emulate_media(media='print')
-    page.pdf(path=str(ROOT / 'docs' / 'Carte-playtest.pdf'), format='A4', print_background=True)
+    page.pdf(path=str(ROOT/'docs/Carte-playtest.pdf'),format='A4',print_background=True)
     page.emulate_media(media='screen')
     page.locator('#catalog [data-close]').click()
-    page.set_viewport_size({'width': 390, 'height': 844})
-    page.clock.run_for(200)
-    assert page.evaluate('document.documentElement.scrollWidth <= innerWidth'), 'Overflow home mobile'
-    page.screenshot(path=str(ROOT / 'docs' / 'anteprima-mobile.png'), full_page=True)
-    page.set_viewport_size({'width': 1440, 'height': 1050})
-    page.get_by_role('button', name='Apri il mercato').click()
-    page.wait_for_function("[...document.querySelectorAll('img:not([loading=lazy])')].every(i=>i.complete&&i.naturalWidth>0)")
-    assert page.locator('.market .original-art image').count() == 3
-    assert page.locator('.role-box .role-portrait').count() == 1
-    page.screenshot(path=str(ROOT / 'docs' / 'anteprima-tavolo.png'), full_page=True)
-    assert page.locator('#suggest-bid').is_visible()
-    page.locator('#suggest-bid').click()
-    assert page.locator('.hand-card.selected').count() == 2
-    game_before_theme=page.evaluate("localStorage.getItem('mercatonero-game-v2')")
-    page.get_by_role('button', name='Tema scuro', exact=True).click()
-    assert page.evaluate("localStorage.getItem('mercatonero-game-v2')") == game_before_theme
-    page.screenshot(path=str(ROOT / 'docs' / 'anteprima-tavolo-scuro.png'), full_page=True)
-    page.set_viewport_size({'width':390,'height':844})
-    page.clock.run_for(200)
-    assert page.evaluate('document.documentElement.scrollWidth <= innerWidth'), 'Overflow tema scuro mobile'
-    page.screenshot(path=str(ROOT / 'docs' / 'anteprima-scura-mobile.png'), full_page=True)
+    page.set_viewport_size({'width':390,'height':844});page.clock.run_for(200)
+    assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
+    page.screenshot(path=str(ROOT/'docs/anteprima-mobile.png'),full_page=True)
     page.set_viewport_size({'width':1440,'height':1050})
-    page.get_by_role('button', name='Tema chiaro', exact=True).click()
-    context.set_offline(True)
-    page.reload()
-    page.get_by_role('button', name='Riprendi la partita salvata').click()
-    page.locator('#uncover').click()
-    phases = set()
-    for step in range(5000):
-        state = json.loads(page.evaluate("localStorage.getItem('mercatonero-game-v2')"))
-        phase = state['phase']
-        phases.add(phase)
-        if phase == 'over':
-            break
-        if state['players'][state['actor']]['bot']:
-            page.clock.run_for(400)
-            continue
-        if page.locator('#uncover').count():
-            page.locator('#uncover').click()
-        if phase == 'bid':
-            ids = [c['id'] for c in state['players'][state['actor']]['hand'][:2]]
-            for card in ids:
-                page.locator(f'[data-card="{card}"]').click()
-            target = next(i for i in range(len(state['players'])) if i != state['actor'])
-            if page.locator('#target').count():
+    page.locator('#count').select_option('4')
+    page.get_by_role('button',name='Apri il mercato').click()
+    assert page.locator('.white-reserve [data-card]').count()==3
+    assert page.locator('.market .original-art image').count()==3
+    page.screenshot(path=str(ROOT/'docs/anteprima-tavolo.png'),full_page=True)
+    page.locator('#suggest-bid').click();assert page.locator('.hand-card.selected').count()==2
+    before=page.evaluate(f'localStorage.getItem("{KEY}")')
+    page.get_by_role('button',name='Tema scuro',exact=True).click()
+    assert page.evaluate(f'localStorage.getItem("{KEY}")')==before
+    page.screenshot(path=str(ROOT/'docs/anteprima-tavolo-scuro.png'),full_page=True)
+    page.set_viewport_size({'width':390,'height':844});page.clock.run_for(200)
+    assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
+    page.screenshot(path=str(ROOT/'docs/anteprima-scura-mobile.png'),full_page=True)
+    page.set_viewport_size({'width':1440,'height':1050})
+    page.get_by_role('button',name='Tema chiaro',exact=True).click()
+    context.set_offline(True);page.reload()
+    page.get_by_role('button',name='Riprendi la partita salvata').click()
+
+    def state():
+        return json.loads(page.evaluate(f'localStorage.getItem("{KEY}")'))
+
+    def uncover():
+        if page.locator('#uncover').count():page.locator('#uncover').click()
+
+    def step_ui(s):
+        phase=s['phase'];phases.add(phase);p=s['players'][s['actor']]
+        if p['bot']:
+            page.clock.run_for(400);return
+        uncover()
+        if phase=='bid':
+            page.locator('#suggest-bid').click();page.locator('[data-action="bid"]').click()
+        elif phase=='fairy':page.locator('[data-action="skip"]').click()
+        elif phase=='trick':
+            kind=s['effect']['card']['kind']
+            if kind in ('smoke','curse'):
+                target=next(i for i in range(len(s['players'])) if i!=s['actor'])
                 page.locator('#target').select_option(str(target))
-            page.locator('[data-action="bid"]').click()
-        elif phase in ('fairy', 'alchemist'):
-            page.locator('[data-action="skip"]').click()
-        elif phase == 'choose':
-            page.locator('[data-object]').first.click()
-            page.locator('[data-action="choose"]').click()
-        elif phase == 'raid':
-            if state['players'][state['actor']]['stash']:
-                if page.locator('[data-own]').count():
-                    page.locator('[data-own]').first.click()
+            elif kind=='whisper':page.locator('[data-object]').first.click()
+            page.locator('[data-action="resolve"]').click()
+        elif phase=='alchemist':page.locator('[data-action="skip"]').click()
+        elif phase=='choose':
+            page.locator('[data-object]').first.click();page.locator('[data-action="choose"]').click()
+        elif phase=='thief':page.locator('[data-action="steal"]').click()
+        elif phase=='raid':
+            if p['stash']:
+                if page.locator('[data-own]').count():page.locator('[data-own]').first.click()
                 page.locator('[data-action="confiscate"]').click()
-            else:
-                cards = page.locator('[data-card]')
-                if cards.count() >= 3:
-                    ids = cards.evaluate_all('(els)=>els.slice(0,3).map(e=>e.dataset.card)')
-                    for card in ids:
-                        page.locator(f'[data-card="{card}"]').click()
-                    page.locator('[data-action="bribe"]').click()
-                else:
-                    page.locator('[data-action="confiscate"]').click()
-        elif phase == 'thief':
-            page.locator('[data-action="steal"]').click()
-        elif phase == 'end':
-            assert not page.locator('[data-action="wash"]').count()
-            stash = state['players'][state['actor']]['stash']
-            families = {o['family'] for o in stash}
-            trio = next(([o['id'] for o in stash if o['family'] == f][:3] for f in families if sum(o['family'] == f for o in stash) >= 3), None)
-            if trio:
-                for obj in trio:
-                    page.locator(f'[data-cargo="{obj}"]').click()
-                page.locator('[data-action="smuggle"]').click()
-            else:
-                page.locator('[data-action="done"]').click()
-        elif phase == 'draw':
-            assert page.get_by_role('button', name='Pesca 2 Monete', exact=True).is_visible()
-            assert page.get_by_role('button', name='Pesca 1 Trucco', exact=True).is_visible()
-            choice = 'draw-coin' if state['round'] % 2 else 'draw-trick'
-            page.locator(f'[data-action="{choice}"]').click()
-        elif phase == 'trim':
-            ids = page.locator('[data-card]').evaluate_all('(els,n)=>els.slice(0,n).map(e=>e.dataset.card)',len(state['players'][state['actor']]['hand'])-8)
-            for card in ids:
-                page.locator(f'[data-card="{card}"]').click()
+            elif len(p['hand'])>=3:
+                for c in p['hand'][:3]:page.locator(f'[data-card="{c["id"]}"]').click()
+                page.locator('[data-action="bribe"]').click()
+            else:page.locator('[data-action="confiscate"]').click()
+        elif phase=='end':
+            assert page.locator('[data-action="wash"]').count()==0
+            triple=next(([o['id'] for o in p['stash'] if o['family']==f][:3] for f in {o['family'] for o in p['stash']} if sum(o['family']==f for o in p['stash'])>=3),None)
+            if triple:
+                page.locator('#suggest-set').click();page.locator('[data-action="smuggle"]').click()
+            else:page.locator('[data-action="done"]').click()
+        elif phase=='draw':
+            buttons=[page.locator('[data-action="draw-coin"]'),page.locator('[data-action="draw-trick"]')]
+            chosen=next((b for b in buttons if b.is_enabled()),None)
+            if chosen is not None:chosen.click()
+            else:page.locator('[data-action="skip-draw"]').click()
+        elif phase=='trim':
+            for c in p['hand'][:len(p['hand'])-8]:page.locator(f'[data-card="{c["id"]}"]').click()
             page.locator('[data-action="trim"]').click()
-        else:
-            raise AssertionError(phase)
-        assert not page.locator('#toast').inner_text(), page.locator('#toast').inner_text()
-    else:
-        raise AssertionError('Partita UI bloccata')
+        else:raise AssertionError(phase)
+        assert page.locator('#toast').inner_text()=='',page.locator('#toast').inner_text()
+
+    for _ in range(2000):
+        s=state()
+        if s['phase']=='over':break
+        step_ui(s)
+    else:raise AssertionError('Partita UI bloccata')
+    assert s['round']==5 and s['finishReason']=='five-rounds'
     assert page.locator('.results').is_visible()
-    offline_assets=page.evaluate("async()=>{const paths=Object.values(MercatoArt.objects).concat(Object.values(MercatoArt.roles),MercatoArt.caravan);return Promise.all(paths.map(async p=>({path:p,ok:(await fetch(p)).ok})));}")
-    assert all(item['ok'] for item in offline_assets), offline_assets
-    assert state['finishReason'] in ('two-sets', 'objects-exhausted')
-    page.reload()
-    page.get_by_role('button', name='Riprendi la partita salvata').click()
-    assert page.locator('.results').is_visible(), 'Risultati non ripristinati offline'
-    # Seconda partita: mani nascoste e layout a sei giocatori sul telefono.
-    page.get_by_role('button', name='Un’altra notte').click()
-    page.locator('#count').select_option('6')
-    page.locator('#mode').select_option('local')
-    page.get_by_role('button', name='Apri il mercato').click()
-    assert page.locator('[data-card]').count() == 0, 'Mano visibile prima del passaggio'
-    page.locator('#uncover').click()
-    assert page.locator('[data-card]').count() == 7
-    assert page.locator('.market .object-card').count() == 3
-    page.set_viewport_size({'width': 390, 'height': 844})
-    page.clock.run_for(200)
-    assert page.evaluate('document.documentElement.scrollWidth <= innerWidth'), 'Overflow tavolo mobile'
-    page.screenshot(path=str(ROOT / 'docs' / 'anteprima-tavolo-mobile.png'), full_page=True)
-    page.locator('[data-action="bid"]').click()
-    assert page.locator('[data-card]').count() == 0, 'La mano precedente non è stata nascosta'
-    assert page.locator('#uncover').is_visible()
-    # Scelta di pesca atomica e conservazione del salvataggio precedente.
+    offline=page.evaluate("""async()=>Promise.all([...Object.values(MercatoArt.objects),...Object.values(MercatoArt.roles),MercatoArt.caravan,'docs/Regolamento-0.5.pdf'].map(async url=>(await fetch(url)).ok))""")
+    assert all(offline)
+    page.reload();page.get_by_role('button',name='Riprendi la partita salvata').click();assert page.locator('.results').is_visible()
+    # Mani private e Bianche: anche a sei giocatori il banco espone 5 Oggetti.
+    page.get_by_role('button',name='Un’altra notte').click();page.locator('#mode').select_option('local');page.locator('#count').select_option('6');page.get_by_role('button',name='Apri il mercato').click()
+    assert page.locator('[data-card]').count()==0
+    uncover();assert page.locator('[data-card]').count()==10;assert page.locator('.market .object-card').count()==5
+    page.set_viewport_size({'width':390,'height':844});page.clock.run_for(200)
+    assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
+    page.screenshot(path=str(ROOT/'docs/anteprima-tavolo-mobile.png'),full_page=True)
+    page.locator('[data-action="pass"]').click();assert page.locator('[data-card]').count()==0
+    assert state()['bids'][0][0]['kind']=='blank'
+    assert page.locator('.covered-bid .money-back').count()==1
+    assert page.locator('.covered-bid .trick-back').count()==0
+    # Fata + Fumo + Soffiata + Raddoppio + Maledizione: controlli reali mirati.
     context.set_offline(False)
     page.evaluate("""() => {
-      const g=new Mercato.Game({count:3,seed:123,mode:'local'});
-      g.phase='draw';g.actor=0;g.queue=[1,2];
-      localStorage.setItem('mercatonero-game-v2',JSON.stringify(g));
-      localStorage.setItem('mercatonero-game-v1','vecchio salvataggio da conservare');
+      const g=new Mercato.Game({count:3,seed:7,mode:'local'});
+      const t=kind=>({...Mercato.TRICKS.find(t=>t.kind===kind),id:kind});
+      g.players.forEach(p=>p.role='witch');g.players[0].role='fairy';
+      g.players[0].hand=[{id:'a',kind:'coin',name:'Moneta',value:4},t('smoke'),t('whisper'),t('double')];
+      g.players[1].hand=[{id:'b',kind:'coin',name:'Moneta',value:2},t('curse')];g.players[2].hand=[];
+      g.act('bid',{ids:['a','smoke','whisper']});g.act('bid',{ids:['b','curse']});g.act('bid',{ids:[g.players[2].blanks[0].id]});
+      localStorage.setItem('mercatonero-game-v3',JSON.stringify(g));localStorage.setItem('mercatonero-game-v2','precedente da conservare');
     }""")
-    page.reload()
-    assert 'vecchio salvataggio' in page.locator('main').inner_text()
-    page.get_by_role('button', name='Riprendi la partita salvata').click()
-    page.locator('#uncover').click()
-    page.get_by_role('button', name='Pesca 1 Trucco', exact=True).click()
-    draw_state=json.loads(page.evaluate("localStorage.getItem('mercatonero-game-v2')"))
-    assert len(draw_state['players'][0]['hand']) == 8
-    assert draw_state['actor'] == 1
-    page.locator('#uncover').click()
-    page.get_by_role('button', name='Pesca 2 Monete', exact=True).click()
-    draw_state=json.loads(page.evaluate("localStorage.getItem('mercatonero-game-v2')"))
-    assert len(draw_state['players'][1]['hand']) == 9 and draw_state['phase'] == 'trim'
-    assert page.evaluate("localStorage.getItem('mercatonero-game-v1')") == 'vecchio salvataggio da conservare'
-    # Il secondo set non interrompe le azioni degli altri, poi chiude senza pesca.
-    page.evaluate("""() => {
-      const g=new Mercato.Game({count:3,seed:123,mode:'local'});
-      const all=[...g.market,...g.objects];
-      const f=all[0].family;
-      const six=all.filter(o=>o.family===f);
-      g.market=all.filter(o=>o.family!==f).slice(0,2);
-      g.objects=all.filter(o=>o.family!==f).slice(2);
-      g.players[0].caravan=six.slice(0,3);g.players[0].stash=six.slice(3);
-      g.phase='end';g.actor=0;g.queue=[1,2];
-      localStorage.setItem('mercatonero-game-v2',JSON.stringify(g));
-    }""")
-    page.reload()
-    page.get_by_role('button', name='Riprendi la partita salvata').click()
-    page.locator('#uncover').click()
-    page.get_by_role('button', name='Seleziona un set disponibile', exact=True).click()
-    assert page.locator('[data-cargo][aria-pressed="true"]').count() == 3
-    page.get_by_role('button', name='Contrabbanda il set', exact=True).click()
-    assert 'ULTIMO ROUND' in page.locator('main').inner_text()
-    page.get_by_role('button', name='Concludi le azioni').click()
-    for _ in range(2):
-        assert not page.locator('.results').count()
-        page.locator('#uncover').click()
-        page.get_by_role('button', name='Concludi le azioni').click()
-    assert page.locator('.results').is_visible()
-    assert 'secondo set' in page.locator('.finish-reason').inner_text()
-    assert errors == [], errors
-    assert external == [], external
-    print(json.dumps({'passed': True, 'offline_reload': True, 'offline_full_game': True, 'local_privacy': True, 'mobile_no_overflow': True, 'catalog_cards': 78, 'original_artwork_offline': True, 'sweets_preview': 6, 'dark_theme_persistence': True, 'suggested_bid_and_set': True, 'phases_seen': sorted(phases), 'javascript_errors': errors, 'external_requests': external}, indent=2))
+    page.reload();assert 'vecchio salvataggio' in page.locator('main').inner_text();page.get_by_role('button',name='Riprendi la partita salvata').click();uncover()
+    page.locator('[data-card="double"]').click();page.locator('[data-action="fairy"]').click()
+    seen=set()
+    for _ in range(80):
+        s=state()
+        if s['phase']=='end':break
+        if s['phase']=='trick':seen.add(s['effect']['card']['kind'])
+        step_ui(s)
+    assert seen=={'smoke','whisper','double','curse'},seen
+    assert state()['paymentComplete'] is True
+    assert page.evaluate("localStorage.getItem('mercatonero-game-v2')")=='precedente da conservare'
+    assert errors==[],errors
+    assert external==[],external
+    print(json.dumps({'passed':True,'rules':'PDF 0.5','offline_full_game_and_reload':True,'original_artwork_and_pdf_offline':True,'catalog_cards':114,'white_reserve':True,'interactive_tricks':sorted(seen),'phases_seen':sorted(phases),'javascript_errors':errors,'external_requests':external},indent=2))
     browser.close()

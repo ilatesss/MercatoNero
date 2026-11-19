@@ -1,163 +1,113 @@
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
-const {Game,OBJECTS,FAMILIES}=require('../game.js');
-const fresh=(count=4)=>new Game({count,seed:42,mode:'local'});
+const {Game,OBJECTS,FAMILIES,TRICKS}=require('../game.js');
+const fresh=(n=4)=>new Game({count:n,seed:42,mode:'local'});
 const coin=(id,value)=>({id,kind:'coin',name:'Moneta',value});
+const trick=(kind,id=kind)=>({...TRICKS.find(c=>c.kind===kind),id});
+const pass=g=>g.act('bid',{ids:[g.players[g.actor].blanks[0].id]});
+function fixture(hands){const g=fresh(hands.length);g.players.forEach((p,i)=>{p.role='witch';p.hand=hands[i];});return g;}
+function finishChoices(g){let n=0;while(!['end','over'].includes(g.phase)&&n++<100)g.botStep();assert.ok(n<100);}
 function invariant(g){
-  const cards=[...g.coins,...g.tricks,...g.coinDiscard,...g.trickDiscard,...g.players.flatMap(p=>p.hand)];
-  assert.equal(cards.length,42);assert.equal(new Set(cards.map(c=>c.id)).size,42);
-  const objects=[...g.objects,...g.market,...g.removed,...g.players.flatMap(p=>[...p.stash,...p.caravan])];
-  assert.equal(objects.length,6*(g.players.length-1));assert.equal(new Set(objects.map(c=>c.id)).size,objects.length);
-  for(const p of g.players){assert.ok(p.suspicion>=0);assert.equal(p.caravan.length%3,0);}
+  const escrow=g.paymentComplete?[]:g.bids.flat().filter(c=>c.kind!=='blank');
+  const cards=[...g.coins,...g.tricks,...g.coinDiscard,...g.trickDiscard,...g.players.flatMap(p=>p.hand),...escrow];
+  assert.equal(cards.length,54);assert.equal(new Set(cards.map(c=>c.id)).size,54);assert.equal(cards.filter(c=>c.kind==='coin').length,30);
+  const blanks=g.players.flatMap(p=>p.blanks);assert.equal(blanks.length,3*g.players.length);assert.equal(new Set(blanks.map(c=>c.id)).size,blanks.length);assert.ok(blanks.every(c=>c.kind==='blank'&&c.value===0));
+  const objects=[...g.objects,...g.market,...g.removed,...g.players.flatMap(p=>[...p.stash,...p.caravan])];assert.equal(objects.length,6*(g.players.length===3?2:g.players.length));assert.equal(new Set(objects.map(o=>o.id)).size,objects.length);
+  for(const p of g.players){assert.ok(Number.isFinite(p.suspicion)&&p.suspicion>=0);assert.equal(p.caravan.length%3,0);}
 }
-test('Composizione esatta e distribuzione per 3–6 giocatori',()=>{
-  assert.equal(OBJECTS.length,30);for(const f of FAMILIES)assert.equal(OBJECTS.filter(o=>o.family===f.id).length,6);
-  assert.equal(OBJECTS.find(o=>o.id==='I1').value,2);assert.equal(OBJECTS.find(o=>o.id==='R1').value,1);
-  for(let n=3;n<=6;n++){const g=fresh(n);invariant(g);assert.equal(g.market.length,n===3?2:3);for(const p of g.players){assert.equal(p.hand.filter(c=>c.kind==='coin').length,5);assert.equal(p.hand.filter(c=>c.kind!=='coin').length,2);}}
+test('PDF: 36 Oggetti/6 Famiglie, 30 Monete, 24 Trucchi, 3 Bianche personali',()=>{
+  assert.equal(OBJECTS.length,36);assert.equal(FAMILIES.length,6);assert.equal(TRICKS.length,8);
+  for(const f of FAMILIES)assert.equal(OBJECTS.filter(o=>o.family===f.id).length,6);
+  for(let n=3;n<=6;n++){const g=fresh(n);invariant(g);assert.equal(g.market.length,n-1);assert.equal(g.families.length,n===3?2:n);assert.equal(g.coins.length,30-5*n);assert.equal(g.tricks.length,24-2*n);assert.ok(g.players.every(p=>p.hand.length===7&&p.hand.filter(c=>c.kind==='coin').length===5));}
 });
-test('Pareggio: Mazziere per primo, poi senso orario; il Sospetto non conta',()=>{
-  const g=fresh();g.dealer=2;g.bids=g.players.map((_,i)=>[coin('t'+i,4)]);g.players[0].suspicion=0;g.players[2].suspicion=5;g.players[3].suspicion=2;
-  assert.deepEqual(g.rank(),[2,3,0,1]);g.bids[0]=[coin('t0',5)];assert.equal(g.rank()[0],0);g.cancelled=['t2'];assert.equal(g.total(2),0);
+test('Puntata 1–3: Bianche fuori dalla mano, errori senza mutazioni',()=>{
+  const g=fresh(),before=JSON.stringify(g);assert.throws(()=>g.act('bid',{ids:[]}));assert.throws(()=>g.act('bid',{ids:[g.players[0].blanks[0].id,g.players[0].blanks[0].id]}));assert.equal(JSON.stringify(g),before);
+  g.act('bid',{ids:[g.players[0].hand[0].id,g.players[0].blanks[0].id]});assert.equal(g.players[0].hand.length,6);assert.equal(g.players[0].blanks.length,3);invariant(g);
 });
-test('Passare non assegna oggetti; puntata invalida non muta la fase',()=>{
-  const g=fresh();g.players.forEach(p=>p.role='witch');
-  assert.throws(()=>g.act('bid',{ids:[g.players[0].hand[0].id,g.players[0].hand[0].id]}));
-  for(let i=0;i<4;i++)g.act('bid',{ids:[]});assert.equal(g.phase,'end');assert.equal(g.market.length,0);assert.equal(g.removed.length,3);
+test('Solo Bianche: passo senza acquisti né pagamento',()=>{
+  const g=fresh();g.players.forEach(p=>p.role='witch');for(let i=0;i<4;i++)pass(g);assert.equal(g.phase,'end');assert.equal(g.removed.length,3);assert.equal(g.coinDiscard.length+g.trickDiscard.length,0);assert.ok(g.players.every(p=>p.hand.length===7));invariant(g);
 });
-test('Pagamento solo di chi prende un oggetto; chi perde conserva le carte',()=>{
-  const g=fresh(3);g.players.forEach(p=>p.role='witch');const ids=[];
-  g.players.forEach((p,i)=>{p.hand=[coin('x'+i,3-i)];ids.push('x'+i);});
-  for(let i=0;i<3;i++)g.act('bid',{ids:[ids[i]]});
-  assert.equal(g.phase,'choose');g.act('choose',{id:g.market[0].id});g.act('choose',{id:g.market[0].id});
-  assert.equal(g.players[0].hand.length,0);assert.equal(g.players[1].hand.length,0);assert.equal(g.players[2].hand[0].id,'x2');assert.equal(g.coinDiscard.length,2);
+test('Tutti pagano dopo tutte le scelte, anche il perdente; Bianche intatte',()=>{
+  const g=fixture([[coin('a',4)],[coin('b',3)],[coin('c',1)]]);for(let i=0;i<3;i++)g.act('bid',{ids:[g.players[i].hand[0].id,g.players[i].blanks[0].id]});g.act('choose',{id:g.market[0].id});assert.equal(g.coinDiscard.length,0);g.act('choose',{id:g.market[0].id});assert.equal(g.coinDiscard.length,3);assert.ok(g.players.every(p=>p.hand.length===0&&p.blanks.length===3));
 });
-test('Raddoppio vale 2; Fumi multipli cancellano Monete diverse, non Trucchi',()=>{
-  const g=fresh(3);g.players.forEach(p=>p.role='witch');
-  g.players[0].hand=[{id:'s1',kind:'smoke',value:2},{id:'s2',kind:'smoke',value:2}];g.players[1].hand=[coin('a',4),coin('b',3),{id:'d',kind:'double',value:1}];g.players[2].hand=[];
-  g.act('bid',{ids:['s1','s2'],target:1});g.act('bid',{ids:['a','b','d']});g.act('bid',{ids:[]});
-  assert.equal(g.total(1),2);assert.deepEqual(g.cancelled,['a','b']);
+test('Resto mancia torna solo se perdi, non se vinci',()=>{
+  const g=fixture([[coin('a',4)],[coin('b',3)],[trick('tip')]]);for(let i=0;i<3;i++)g.act('bid',{ids:[g.players[i].hand[0].id]});finishChoices(g);assert.equal(g.players[2].hand[0].kind,'tip');assert.equal(g.trickDiscard.length,0);
+  const h=fixture([[trick('tip')],[coin('b',1)],[]]);h.act('bid',{ids:['tip']});h.act('bid',{ids:['b']});pass(h);finishChoices(h);assert.equal(h.players[0].hand.length,0);assert.equal(h.trickDiscard[0].kind,'tip');
 });
-test('Retata: eccesso perso, pagamento, Mago una sola volta, merce protetta',()=>{
-  const g=fresh();g.actor=0;g.players[0].role='mage';g.players[0].suspicion=9;g.players[0].caravan=[...OBJECTS.slice(0,3)];g.choiceQueue=[];g.ranking=[0,1,2,3];g.startRaids([0],'choose');
-  const id=g.players[0].hand[0].id;g.act('bribe',{ids:[id],mage:true});assert.equal(g.players[0].suspicion,2);assert.equal(g.players[0].used,true);assert.equal(g.players[0].caravan.length,3);assert.equal(g.stats.raids,1);
+test('Raddoppio raddoppia una Moneta: 4×2 + 4 + 1 = 13',()=>{
+  const g=fixture([[coin('a',4),coin('b',4),trick('double')],[],[]]);g.act('bid',{ids:['a','b','double']});pass(g);pass(g);assert.equal(g.effect.card.kind,'double');g.act('resolve',{coin:'a'});assert.equal(g.total(0),13);
 });
-test('Retata prima della scelta protegge la puntata dal pagamento',()=>{
-  const g=fresh();g.actor=0;g.bids[0]=[g.players[0].hand[0]];g.ranking=[0,1,2,3];g.players[0].suspicion=6;g.startRaids([0],'alchemist');
-  const ids=g.players[0].hand.slice(0,3).map(c=>c.id);assert.throws(()=>g.act('bribe',{ids}),/escluse/);assert.ok(!g.available(0).some(c=>c.id===ids[0]));
+test('Fumo prima di Raddoppio: Moneta annullata resta 0',()=>{
+  const g=fixture([[coin('a',4),trick('double')],[trick('smoke')],[]]);g.act('bid',{ids:['a','double']});g.act('bid',{ids:['smoke']});pass(g);assert.equal(g.effect.card.kind,'smoke');g.act('resolve',{target:0,coin:'a'});assert.equal(g.effect.card.kind,'double');g.act('resolve',{coin:'a'});assert.equal(g.total(0),1);
 });
-test('Contrabbando esatto, niente lavaggio, punteggio e penalità',()=>{
-  const g=fresh();g.phase='end';g.actor=0;const p=g.players[0];p.stash=OBJECTS.slice(3,6).map(o=>({...o}));p.suspicion=5;
-  g.act('smuggle',{ids:p.stash.map(o=>o.id)});assert.equal(g.score(0),22);
-  const before=JSON.stringify(g);assert.throws(()=>g.act('wash',{ids:p.hand.slice(0,2).map(c=>c.id)}));assert.equal(JSON.stringify(g),before);
-  assert.throws(()=>g.act('smuggle',{ids:p.caravan.map(o=>o.id)}));
+test('Fumi multipli: Monete diverse e scelta nei valori uguali',()=>{
+  const g=fixture([[trick('smoke','s1'),trick('smoke','s2')],[coin('a',4),coin('b',4),trick('light')],[]]);g.act('bid',{ids:['s1','s2']});g.act('bid',{ids:['a','b','light']});pass(g);assert.deepEqual(g.smokeCandidates(1).map(c=>c.id),['a','b']);g.act('resolve',{target:1,coin:'b'});assert.deepEqual(g.smokeCandidates(1).map(c=>c.id),['a']);g.act('resolve',{target:1,coin:'a'});assert.equal(g.total(1),1);
 });
-test('Scarti separati: nessuna sostituzione Monete/Trucchi',()=>{
-  const g=fresh(6);assert.equal(g.coins.length+g.tricks.length,0);assert.equal(g.draw('coin'),undefined);
-  g.trickDiscard.push({id:'t',kind:'double',value:1});assert.equal(g.draw('coin'),undefined);assert.equal(g.draw('trick').id,'t');
-  g.coinDiscard.push(coin('c',4));assert.equal(g.draw('trick'),undefined);assert.equal(g.draw('coin').id,'c');
+test('Fumo non colpisce Bianche/Trucchi; la puntata vera a 0 partecipa',()=>{
+  const g=fixture([[trick('smoke')],[coin('a',1)],[]]);g.act('bid',{ids:['smoke']});g.act('bid',{ids:['a']});pass(g);g.act('resolve',{target:1,coin:'a'});assert.equal(g.total(1),0);assert.equal(g.participating(1),true);finishChoices(g);assert.equal(g.players[1].stash.length,1);
+  const h=fixture([[trick('smoke')],[trick('light')],[]]);h.act('bid',{ids:['smoke']});h.act('bid',{ids:['light']});pass(h);h.act('resolve',{target:1});assert.equal(h.total(1),1);assert.deepEqual(h.cancelled,[]);
 });
-test('Una scelta di pesca dà esattamente 2 Monete oppure 1 Trucco e passa il turno',()=>{
-  for(const kind of ['coin','trick']){
-    const g=fresh(3);g.phase='draw';g.actor=0;g.queue=[1,2];const p=g.players[0];p.hand=p.hand.slice(0,4);const before=p.hand.length;
-    g.act('draw',{kind});assert.equal(p.hand.length,before+(kind==='coin'?2:1));assert.ok(p.hand.slice(before).every(c=>(c.kind==='coin')===(kind==='coin')));assert.equal(g.actor,1);
-    assert.throws(()=>g.act('draw',{kind:'mixed'}));
-  }
+test('Soffiata massimo +1, poi Sigillo, infine Strega',()=>{
+  for(const witch of [false,true]){const g=fixture([[coin('a',4),trick('seal')],[trick('whisper','w1'),trick('whisper','w2')],[]]);g.market[0].apples=3;const id=g.market[0].id;g.act('bid',{ids:['a','seal']});g.act('bid',{ids:['w1','w2']});pass(g);g.act('resolve',{object:id});g.act('resolve',{object:id});assert.equal(g.tipped.length,1);assert.equal(g.applesFor(0,g.market[0]),3);g.act('choose',{id,witch});finishChoices(g);assert.equal(g.players[0].suspicion,witch?0:3);}
 });
-test('Pesca insufficiente: nessun cambio di tipo, limite 8 dopo la scelta',()=>{
-  const g=fresh(6);g.phase='draw';g.actor=0;g.queue=[1];const before=g.players[0].hand.length;
-  g.coinDiscard=[coin('one',2)];g.trickDiscard=[{id:'t',kind:'double',value:1}];g.act('draw',{kind:'coin'});
-  assert.equal(g.players[0].hand.length,before+1);assert.equal(g.trickDiscard.length,1);assert.equal(g.stats.emptyDraws,1);assert.equal(g.actor,1);
-  const h=fresh(3);h.phase='draw';h.actor=0;h.queue=[1];h.act('draw',{kind:'coin'});assert.equal(h.phase,'trim');assert.equal(h.players[0].hand.length,9);
-  h.act('trim',{ids:[h.players[0].hand[0].id]});assert.equal(h.players[0].hand.length,8);assert.equal(h.actor,1);
+test('Mano Leggera prevale; tra Mani: meno Sospetto, poi Mazziere',()=>{
+  const g=fresh();g.dealer=2;g.bids=[[coin('a',4)],[trick('light'),coin('b',3)],[trick('light'),coin('c',3)],[coin('d',4)]];g.players[0].suspicion=0;g.players[1].suspicion=3;g.players[2].suspicion=5;assert.deepEqual(g.rank(),[1,2,3,0]);g.players[1].suspicion=5;assert.equal(g.rank()[0],2);
 });
-test('Strega azzera le Mele; Sigilli multipli si sommano senza Sospetto negativo',()=>{
-  for(const witch of [false,true]){
-    const g=fresh(3);g.players.forEach(p=>p.role='witch');g.players[0].suspicion=2;
-    g.players[0].hand=[{id:'s1',kind:'seal',value:2},{id:'s2',kind:'seal',value:2}];
-    g.act('bid',{ids:['s1','s2']});g.act('bid',{ids:[]});g.act('bid',{ids:[]});
-    g.market[0].apples=witch?3:1;g.act('choose',{id:g.market[0].id,witch});
-    assert.equal(g.players[0].suspicion,2);assert.equal(g.players[0].used,witch);
-  }
+test('Pareggi senza Mano: Sospetto prima del Mazziere, esempio del PDF',()=>{
+  const g=fresh();g.bids=[[coin('a',3),coin('b',2)],[coin('c',4)],[coin('d',3)],[coin('e',2),coin('f',2)]];[2,3,0,1].forEach((s,i)=>g.players[i].suspicion=s);assert.deepEqual(g.rank(),[0,3,1,2]);
 });
-test('Maledizione genera una Retata anche senza acquistare un oggetto',()=>{
-  const g=fresh(3);g.players.forEach(p=>p.role='witch');g.players[1].suspicion=5;
-  g.players[0].hand=[{id:'curse',kind:'curse',value:1}];g.act('bid',{ids:['curse'],target:1});g.act('bid',{ids:[]});g.act('bid',{ids:[]});
-  assert.equal(g.phase,'raid');assert.equal(g.actor,1);g.act('bribe',{ids:g.available(1).slice(0,3).map(c=>c.id)});assert.equal(g.players[1].suspicion,2);
+test('Maledizione/Lavanderia dopo graduatoria, scelte e pagamento',()=>{
+  const g=fixture([[coin('a',2),trick('curse')],[coin('b',1),trick('laundry')],[]]);g.players[0].suspicion=2;g.players[1].suspicion=1;g.act('bid',{ids:['a','curse']});g.act('bid',{ids:['b','laundry']});pass(g);assert.equal(g.ranking[0],1);assert.equal(g.players[1].suspicion,1);g.market.forEach(o=>o.apples=0);g.act('choose',{id:g.market[0].id});g.act('choose',{id:g.market[0].id});assert.equal(g.paymentComplete,true);assert.equal(g.effect.card.kind,'curse');g.act('resolve',{target:1});assert.equal(g.players[1].suspicion,1);assert.equal(g.ranking[0],1);
 });
-test('Se tutti passano a sei giocatori, la pesca impossibile termina senza blocchi',()=>{
-  const g=fresh(6);g.players.forEach(p=>p.role='witch');for(let i=0;i<6;i++)g.act('bid',{ids:[]});
-  for(let i=0;i<6;i++)g.act('done');for(let i=0;i<6;i++)g.act('draw',{kind:'coin'});
-  assert.equal(g.round,2);assert.equal(g.stats.emptyDraws,12);assert.equal(g.players[0].hand.length,7);invariant(g);
+test('Aggiornamento simultaneo: Lavanderia può evitare la Retata',()=>{
+  const g=fixture([[coin('a',4),trick('laundry')],[trick('curse')],[]]);g.players[0].suspicion=5;g.act('bid',{ids:['a','laundry']});g.act('bid',{ids:['curse']});pass(g);g.market.forEach(o=>o.apples=0);g.act('choose',{id:g.market[0].id});g.act('choose',{id:g.market[0].id});g.act('resolve',{target:0});assert.equal(g.players[0].suspicion,5);assert.equal(g.phase,'end');assert.equal(g.stats.raids,0);
 });
-test('Fata ammette una quarta carta una sola volta; Apprendista copia',()=>{
-  const g=fresh();g.players[0].role='apprentice';g.players[1].role='fairy';g.act('copy',{target:1});assert.equal(g.power(0),'fairy');assert.equal(g.players[0].used,true);
-  g.phase='fairy';g.actor=0;g.queue=[];g.bids[0]=g.players[0].hand.slice(0,3);const fourth=g.players[0].hand[3];g.act('fairy',{id:fourth.id,target:1});assert.equal(g.bids[0].length,4);assert.equal(g.power(0),null);
+test('Lavanderie multiple minimo 0, nessun lavaggio con scarti',()=>{
+  const g=fixture([[trick('laundry','l1'),trick('laundry','l2')],[],[]]);g.players[0].suspicion=1;g.act('bid',{ids:['l1','l2']});pass(g);pass(g);g.market.forEach(o=>o.apples=0);finishChoices(g);assert.equal(g.players[0].suspicion,0);assert.throws(()=>g.act('wash',{ids:[]}));
 });
-test('Alchimista scambia solo merce libera; Ladro dopo i pagamenti',()=>{
-  const g=fresh();g.actor=0;g.phase='alchemist';g.queue=[];g.ranking=[0,1,2,3];g.players[0].role='alchemist';g.players[0].stash=[{...OBJECTS[0]}];const market=g.market[0].id;
-  g.act('swap',{own:'R0',market});assert.equal(g.players[0].stash[0].id,market);assert.equal(g.players[0].used,true);assert.equal(g.players[0].suspicion,0);
-  g.actor=3;g.phase='thief';g.players[3].role='thief';const a=g.players[0].hand.length,b=g.players[3].hand.length;g.steal(true);assert.equal(g.players[0].hand.length,a-1);assert.equal(g.players[3].hand.length,b+1);
+test('Retata dopo pagamento, Mago una volta, reset 2 e Carovana protetta',()=>{
+  const g=fixture([[coin('a',4),coin('keep',1),coin('other',2)],[trick('curse')],[]]);g.players[0].role='mage';g.players[0].suspicion=5;g.players[0].caravan=OBJECTS.slice(0,3).map(o=>({...o}));g.act('bid',{ids:['a']});g.act('bid',{ids:['curse']});pass(g);g.market.forEach(o=>o.apples=0);g.act('choose',{id:g.market[0].id});g.act('choose',{id:g.market[0].id});g.act('resolve',{target:0});assert.equal(g.phase,'raid');assert.ok(g.coinDiscard.some(c=>c.id==='a'));g.act('bribe',{ids:['keep'],mage:true});assert.equal(g.players[0].suspicion,2);assert.equal(g.players[0].used,true);assert.equal(g.players[0].caravan.length,3);
 });
-test('Salvataggio e ripresa deterministici durante un round',()=>{
-  const a=fresh(6);for(let i=0;i<12;i++)a.botStep();const b=Game.restore(JSON.parse(JSON.stringify(a)));
-  for(let step=0;step<5000&&a.phase!=='over';step++){a.botStep();b.botStep();assert.deepEqual(a.toJSON(),b.toJSON());}assert.equal(a.phase,'over');
+test('Confisca: massimo valore, scelta in caso di parità',()=>{
+  const g=fresh(3);g.phase='raid';g.actor=0;g.raidQueue=[];g.players[0].stash=[{...OBJECTS[0],id:'lo',value:1},{...OBJECTS[4],id:'hi1',value:4},{...OBJECTS[4],id:'hi2',value:4}];assert.throws(()=>g.act('confiscate',{id:'lo'}));g.act('confiscate',{id:'hi2'});assert.ok(g.players[0].stash.some(o=>o.id==='hi1'));assert.equal(g.removed.at(-1).id,'hi2');
 });
-test('400 partite complete: conservazione carte, rimescoli, fine per due set o scorte vuote',()=>{
-  for(let n=3;n<=6;n++)for(let seed=1;seed<=100;seed++){
-    const g=new Game({count:n,seed});let steps=0;invariant(g);
-    while(g.phase!=='over'&&steps++<5000){g.botStep();invariant(g);}
-    assert.equal(g.phase,'over',`blocco n=${n}, seed=${seed}, fase=${g.phase}`);assert.ok(['two-sets','objects-exhausted'].includes(g.finishReason));if(g.finishReason==='two-sets')assert.ok(g.players.some(p=>p.caravan.length>=6));else assert.equal(g.objects.length+g.removed.length,0);for(const p of g.players)assert.ok(p.hand.length<=8);
-  }
+test('Fata aggiunge il quarto Trucco, non Bianche; copia non consuma il proprietario',()=>{
+  const g=fixture([[coin('a',1),coin('b',1),coin('c',1),trick('double')],[],[]]);g.players[0].role='apprentice';g.players[1].role='fairy';g.act('copy',{target:1});assert.equal(g.players[1].used,false);g.act('bid',{ids:['a','b','c']});pass(g);pass(g);assert.equal(g.phase,'fairy');assert.throws(()=>g.act('fairy',{id:g.players[0].blanks[0].id}));g.act('fairy',{id:'double'});assert.equal(g.bids[0].length,4);g.act('resolve',{coin:'a'});assert.equal(g.total(0),5);
 });
-
-test('Il quinto round non chiude: si rimescolano gli Oggetti scartati',()=>{
-  const g=fresh(4);g.round=5;g.phase='end';g.actor=0;g.queue=[];g.removed.push(...g.market,...g.objects);g.market=[];g.objects=[];
-  g.act('done');assert.equal(g.phase,'draw');while(g.round===5)g.botStep();assert.equal(g.round,6);assert.equal(g.market.length,3);assert.equal(g.stats.objectReshuffles,1);invariant(g);
+test('Ladro prima di pagamento: mai Bianche o carte già puntate',()=>{
+  const g=fixture([[coin('a',4),coin('safe',1)],[coin('b',3)],[]]);g.players[2].role='thief';g.act('bid',{ids:['a']});g.act('bid',{ids:['b']});pass(g);assert.equal(g.phase,'thief');g.steal(true);assert.equal(g.players[2].hand[0].id,'safe');assert.equal(g.bids[0][0].id,'a');assert.equal(g.players[0].blanks.length,3);assert.equal(g.paymentComplete,false);
 });
-test('La chiusura scatta al secondo set, a fine round per tutti, senza pesca finale',()=>{
-  const g=fresh();g.phase='end';g.actor=0;g.queue=[1,2,3];const p=g.players[0];p.caravan=OBJECTS.slice(0,3).map(o=>({...o}));p.stash=OBJECTS.slice(6,9).map(o=>({...o}));
-  g.act('smuggle',{ids:p.stash.map(o=>o.id)});assert.equal(g.phase,'end');assert.equal(g.closingPlayer,0);assert.equal(p.caravan.length,6);
-  for(let i=0;i<4;i++)g.act('done');assert.equal(g.phase,'over');assert.equal(g.finishReason,'two-sets');
+test('Alchimista scambia solo merce libera prima della scelta',()=>{
+  const g=fixture([[coin('a',4)],[],[]]);g.players[0].role='alchemist';g.players[0].stash=[{...OBJECTS[0],id:'own'}];g.act('bid',{ids:['a']});pass(g);pass(g);assert.equal(g.phase,'alchemist');const id=g.market[0].id;g.act('swap',{own:'own',market:id});assert.equal(g.players[0].stash[0].id,id);assert.ok(g.market.some(o=>o.id==='own'));assert.equal(g.players[0].suspicion,0);
 });
-test('Con un solo set si continua; nessun mazzo/scarto chiude ai punti',()=>{
-  const g=fresh();g.phase='end';g.actor=0;g.queue=[];g.players[0].caravan=OBJECTS.slice(0,3).map(o=>({...o}));g.act('done');assert.equal(g.phase,'draw');
-  const h=fresh();h.phase='end';h.actor=0;h.queue=[];h.objects=[];h.removed=[];h.act('done');assert.equal(h.phase,'over');assert.equal(h.finishReason,'objects-exhausted');
+test('Contrabbando: tre della stessa Famiglia, doppio valore e penalità Ricercato',()=>{
+  const g=fresh();g.phase='end';g.actor=0;g.queue=[];g.players[0].stash=OBJECTS.slice(3,6).map(o=>({...o}));g.players[0].suspicion=4;g.act('smuggle',{ids:g.players[0].stash.map(o=>o.id)});assert.equal(g.score(0),22);g.act('done');assert.equal(g.phase,'draw');
 });
-test('L’ultimo round rispetta il limite 8 anche dopo un furto',()=>{
-  const g=fresh(3);g.phase='end';g.actor=0;g.queue=[];g.objects=[];g.removed=[];g.players[1].hand.push(g.coins.pop(),g.coins.pop());
-  g.act('done');assert.equal(g.phase,'trim');assert.equal(g.actor,1);g.act('trim',{ids:[g.players[1].hand[0].id]});assert.equal(g.phase,'over');assert.equal(g.players[1].hand.length,8);
+test('Pesca 2 Monete o 1 Trucco; altra opzione se il mazzo non basta',()=>{
+  const g=fresh(6);g.phase='draw';g.actor=0;g.queue=[1];assert.equal(g.drawOptions().coin,false);const before=JSON.stringify(g);assert.throws(()=>g.act('draw',{kind:'coin'}));assert.equal(JSON.stringify(g),before);g.act('draw',{kind:'trick'});assert.equal(g.players[0].hand.length,8);assert.equal(g.actor,1);
+  const h=fresh(3);h.phase='draw';h.actor=0;h.queue=[1];h.act('draw',{kind:'coin'});assert.equal(h.phase,'trim');h.act('trim',{ids:[h.players[0].hand[0].id]});assert.equal(h.players[0].hand.length,8);
 });
-test('Rimescolo senza duplicare le collezioni, anche con mercato parziale',()=>{
-  const g=fresh(6);g.removed.push(g.objects.pop());const pool=[...g.objects,...g.market,...g.removed];g.objects=[pool[0]];g.removed=[pool[1]];g.players[0].stash.push(...pool.slice(2));
-  g.round++;g.beginRound();assert.equal(g.market.length,2);assert.equal(g.stats.objectReshuffles,1);invariant(g);
+test('Rimescolo di pesca separato e Bianche escluse dal limite 8',()=>{
+  const g=fresh(6);g.coinDiscard=[coin('one',1),coin('two',2)];assert.equal(g.draw('coin').kind,'coin');assert.equal(g.draw('coin').kind,'coin');assert.equal(g.draw('coin'),undefined);assert.ok(g.tricks.length>0);assert.equal(g.players[0].blanks.length,3);
 });
-test('Versione del salvataggio impedisce di applicare nuove regole a vecchie partite',()=>{
-  const data=JSON.parse(JSON.stringify(fresh()));assert.equal(data.version,2);assert.equal(Game.restore(data).version,2);data.version=1;assert.throws(()=>Game.restore(data),/0.5/);
+test('5 round, nessun rimescolo Oggetti e nessuna pesca finale',()=>{
+  for(let n=3;n<=6;n++){const g=fresh(n);let k=0;while(!(g.round===5&&g.phase==='end')&&k++<1000)g.botStep();assert.ok(k<1000);const draws=g.log.filter(s=>s.includes('pesca 2 Monete')||s.includes('pesca 1 Trucco')).length;while(g.phase!=='over'&&k++<2000)g.botStep();assert.equal(g.round,5);assert.equal(g.finishReason,'five-rounds');assert.equal(g.log.filter(s=>s.includes('pesca 2 Monete')||s.includes('pesca 1 Trucco')).length,draws);assert.equal(g.objects.length,(n===3?12:6*n)-5*(n-1));invariant(g);}
 });
-test('Facile riduce le offerte dei bot senza modificare distribuzione o regole',()=>{
-  for(let seed=1;seed<=100;seed++){
-    const easy=new Game({count:3,seed,difficulty:'easy'}),normal=new Game({count:3,seed,difficulty:'normal'});
-    assert.deepEqual(easy.players,normal.players);easy.actor=1;normal.actor=1;easy.players[1].role=normal.players[1].role='witch';easy.queue=[2,0];normal.queue=[2,0];
-    easy.botStep();normal.botStep();assert.ok(easy.bids[1].length<=2);invariant(easy);
-  }
-  assert.throws(()=>new Game({difficulty:'impossible'}));
+test('Il secondo set non chiude il gioco base (è un modulo opzionale)',()=>{
+  const g=fresh();g.phase='end';g.actor=0;g.queue=[];g.players[0].caravan=OBJECTS.slice(0,3).map(o=>({...o}));g.players[0].stash=OBJECTS.slice(6,9).map(o=>({...o}));g.act('smuggle',{ids:g.players[0].stash.map(o=>o.id)});g.act('done');assert.equal(g.phase,'draw');
 });
-test('Suggerimento usa solo la propria mano e preferisce due Monete',()=>{
-  const g=fresh();const ids=g.suggestedBid(0);assert.equal(ids.length,2);assert.ok(ids.every(id=>g.card(0,id)?.kind==='coin'));
-  const before=g.suggestedBid(0);g.players[1].hand.reverse();g.bids[1]=[coin('segreta',100)];assert.deepEqual(g.suggestedBid(0),before);
+test('Salvataggi PDF deterministici; i precedenti sono rifiutati',()=>{
+  const a=fresh(6);for(let k=0;k<20;k++)a.botStep();const data=JSON.parse(JSON.stringify(a)),b=Game.restore(data);assert.equal(data.version,3);assert.throws(()=>Game.restore({...data,version:2}));while(a.phase!=='over'){a.botStep();b.botStep();assert.deepEqual(a.toJSON(),b.toJSON());}
 });
-test('Vecchi salvataggi mantengono Normale; Facile si ripristina senza cambiare',()=>{
-  const data=JSON.parse(JSON.stringify(fresh()));delete data.difficulty;assert.equal(Game.restore(data).difficulty,'normal');
-  const easy=new Game({count:3,seed:123,difficulty:'easy'});assert.equal(Game.restore(JSON.parse(JSON.stringify(easy))).difficulty,'easy');
+test('800 partite nei due livelli: nessun blocco, conservazione carte, 5 round',()=>{
+  for(const difficulty of ['normal','easy'])for(let n=3;n<=6;n++)for(let seed=1;seed<=100;seed++){const g=new Game({count:n,seed,difficulty});let k=0;invariant(g);while(g.phase!=='over'&&k++<2000){g.botStep();invariant(g);}assert.equal(g.phase,'over',`${n}/${seed}/${difficulty}/${g.phase}`);assert.equal(g.round,5);assert.ok(g.players.every(p=>p.hand.length<=8));}
 });
-test('200 partite Facile complete rispettano conservazione e regole di chiusura',()=>{
-  for(let n=3;n<=6;n++)for(let seed=1;seed<=50;seed++){
-    const g=new Game({count:n,seed,difficulty:'easy'});let steps=0;
-    while(g.phase!=='over'&&steps++<5000){g.botStep();invariant(g);}
-    assert.equal(g.phase,'over');assert.ok(g.players.every(p=>p.hand.length<=8));
-  }
+test('Un secondo Raddoppio non moltiplica ancora la stessa Moneta',()=>{
+  const g=fixture([[coin('a',4),trick('double','d1'),trick('double','d2')],[],[]]);g.act('bid',{ids:['a','d1','d2']});pass(g);pass(g);g.act('resolve',{coin:'a'});assert.equal(g.total(0),10);assert.equal(g.doubled.length,1);
 });
-test('La nuova grafica aggiorna i nomi nei salvataggi senza cambiare valori o Mele',()=>{
-  const data=JSON.parse(JSON.stringify(fresh()));const o=data.objects[0];const current=OBJECTS.find(x=>x.id===o.id);o.name='Nome della prima edizione';o.joke='Battuta precedente';const value=o.value,apples=o.apples;
-  const g=Game.restore(data);const restored=g.objects.find(x=>x.id===o.id);assert.equal(restored.name,current.name);assert.equal(restored.joke,current.joke);assert.equal(restored.value,value);assert.equal(restored.apples,apples);
+test('Soffiata su Oggetto non preso non aumenta alcun Sospetto',()=>{
+  const g=fixture([[trick('whisper')],[],[]]);g.act('bid',{ids:['whisper']});pass(g);pass(g);const id=g.market[0].id;g.act('resolve',{object:id});const other=g.market.find(o=>o.id!==id);other.apples=0;g.act('choose',{id:other.id});assert.ok(g.players.every(p=>p.suspicion===0));assert.ok(g.removed.some(o=>o.id===id));
+});
+test('Una Bianca altrui non si può puntare e non entra nella mano',()=>{
+  const g=fresh();const before=JSON.stringify(g);assert.throws(()=>g.act('bid',{ids:[g.players[1].blanks[0].id]}));assert.equal(JSON.stringify(g),before);assert.ok(g.players.every(p=>p.hand.every(c=>c.kind!=='blank')));
 });

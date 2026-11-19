@@ -20,27 +20,15 @@ I due PDF separati `carte personaggi.pdf` e `carte oggetti.pdf` superano il limi
 - **Oggetti:** ogni carta ha la propria illustrazione al posto delle precedenti icone di Famiglia. Cornice crema e oro e colore della Famiglia restano riconoscibili anche nel tema scuro. Nome, valore, Mele e lettera rimangono testo del browser, selezionabile e leggibile.
 - **Personaggi:** carte complete nel pannello del Ruolo, miniature nel tavolo e originali nel catalogo e nella stampa. Il potere usato è indicato anche a testo; non dipende soltanto dall’immagine attenuata.
 - **Carovana:** la plancia originale con due spazi compare nelle collezioni. Ogni spazio indica un tris e il suo valore; la lista testuale degli Oggetti resta disponibile.
-- **Dolci Avvelenati:** sei carte visibili in un’anteprima separata del catalogo, esclusa dalla stampa del mazzo attivo e dalla partita. Non sono state introdotte nuove Famiglie nel motore.
+- **Dolci Avvelenati:** sesta Famiglia del catalogo, ora attiva nel mazzo del nuovo regolamento e inclusa nella stampa.
 - **Tema scuro:** viola, crema e lampone; le carte mantengono il fondo chiaro delle tavole originali. La preferenza del tema resta salvata. La stampa è chiara.
 
-## Regole e testo delle carte
+## Regole e testo delle carte: nuova edizione PDF
 
-L’intervento è grafico: restano le regole 0.5 concordate in chat, compresa la modalità Facile. Nomi, battute e nomi dei Personaggi sono allineati al nuovo catalogo. Gli identificatori delle carte e dei poteri non cambiano; i vecchi salvataggi 0.5 possono essere ripresi, aggiornando soltanto i nomi e le battute degli Oggetti.
+Il motore ora segue «Il Mercato Nero delle Fiabe (3).pdf», non il precedente limite di due set. I 36 Oggetti, inclusi i Dolci, sono attivi. Il mazzo stampabile comprende 114 fronti, con 24 Trucchi e 18 Bianche. I nomi operativi di alcuni Personaggi e Oggetti tornano a quelli dell’ultimo PDF; le illustrazioni originali restano quelle già estratte.
 
-Il nuovo PDF presenta differenze di regolamento (cinque round, altre carte, altri pagamenti e pareggi). Non sono state applicate automaticamente. Anche alcuni valori stampati nelle immagini differiscono dal motore:
+Le tavole precedenti contengono nomi alternativi: Strega Furfante/Contrabbandiera, Speziale/Alchimista e Maga/Mago. La carta A4 ha la stessa posizione e gli stessi valori, ma il nuovo PDF la chiama Cavallo di Troia Gonfiabile mentre l’illustrazione disponibile è il Topino Sarto della Mala. Questa discrepanza grafica è documentata: non è stata generata una nuova immagine al posto del disegno dell’autrice.
 
-| Oggetto | Partita 0.5: valore / Mele | Nuovo catalogo |
-| --- | --- | --- |
-| Corona della Rana | 2 / 1 | 2 / 0 |
-| Libro delle Ombre, Edizione Tascabile | 2 / 1 | 4 / 2 |
-| Calderone Autopulente Esplosivo | 4 / 2 | 3 / 1 |
+Una finestra SVG esclude la fascia numerica originale delle immagini Oggetto: i valori e le Mele mostrati come testo sono quelli del nuovo regolamento. I file grafici originali non sono ritoccati. I nuovi Trucchi sono carte tipografiche con simboli distinti e testo operativo, dato che il PDF caricato descrive gli effetti ma non fornisce nuove tavole grafiche separate.
 
-Per evitare di mostrare contemporaneamente numeri diversi, una finestra SVG visualizza la porzione illustrata di ogni immagine Oggetto, escludendo la fascia numerica originale. Il file immagine non viene modificato. I numeri stampati e visualizzati sulle carte digitali sono sempre quelli del motore 0.5. Le carte Personaggio mantengono il fronte completo: i poteri sintetici corrispondono a quelli già implementati; per il dettaglio dei tempi vale la guida della partita.
-
-Sostituzioni nominali principali: Mela Quasi Biologica → Fuso Incantato Spuntato; Cavallo di Troia Gonfiabile → Topino Sarto della Mala; Strega Contrabbandiera → Strega Furfante; Alchimista Truffaldino → Speziale Losco; Mago Corrotto → Maga Corrotta. Non cambiano valori o poteri associati.
-
-## Verifica
-
-I 29 test del motore restano superati, incluse 600 partite automatiche nei due livelli. La prova nel browser verifica una partita completa offline, ricarica, immagini originali tutte disponibili senza rete, tema scuro persistente, layout a 390 px, personaggio illustrato, anteprima dei Dolci, catalogo e PDF di 78 carte attive. Le 43 immagini esportate sono confrontate con i checksum della provenienza.
-
-Il PDF per playtest usa ora i disegni dell’autrice; rimane una stampa domestica RGB, non un esecutivo CMYK con abbondanze. La risoluzione delle illustrazioni Oggetto nel catalogo è circa 424 × 424 pixel: non va confusa con l’alta risoluzione dei file di stampa originali.
+Per provenienza, risoluzione e stampa resta valido quanto sopra. La verifica aggiornata è in [ALLINEAMENTO-PDF.md](ALLINEAMENTO-PDF.md). Il PDF stampabile è RGB per playtest e non un esecutivo CMYK.

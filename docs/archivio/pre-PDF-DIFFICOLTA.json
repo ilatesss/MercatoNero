@@ -1,0 +1,59 @@
+{
+  "method": "Giocatore 0: due carte suggerite, altre azioni euristiche. Stessi 500 seed per confronto, senza carte o punti regalati. Non è una stima delle probabilità di vittoria di una persona.",
+  "results": [
+    {
+      "players": 3,
+      "difficulty": "normal",
+      "games": 500,
+      "outrightWins": 89,
+      "sharedWins": 3,
+      "winOrSharePercent": 18.4,
+      "meanScore": 13.034
+    },
+    {
+      "players": 3,
+      "difficulty": "easy",
+      "games": 500,
+      "outrightWins": 376,
+      "sharedWins": 9,
+      "winOrSharePercent": 77,
+      "meanScore": 23.51
+    },
+    {
+      "players": 4,
+      "difficulty": "normal",
+      "games": 500,
+      "outrightWins": 76,
+      "sharedWins": 0,
+      "winOrSharePercent": 15.2,
+      "meanScore": 14.584
+    },
+    {
+      "players": 4,
+      "difficulty": "easy",
+      "games": 500,
+      "outrightWins": 319,
+      "sharedWins": 5,
+      "winOrSharePercent": 64.8,
+      "meanScore": 24.39
+    },
+    {
+      "players": 6,
+      "difficulty": "normal",
+      "games": 500,
+      "outrightWins": 14,
+      "sharedWins": 2,
+      "winOrSharePercent": 3.2,
+      "meanScore": 10.786
+    },
+    {
+      "players": 6,
+      "difficulty": "easy",
+      "games": 500,
+      "outrightWins": 185,
+      "sharedWins": 5,
+      "winOrSharePercent": 38,
+      "meanScore": 21.242
+    }
+  ]
+}

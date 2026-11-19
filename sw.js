@@ -1,7 +1,7 @@
 /* Cache esclusivamente locale. Nessuna telemetria o risorsa esterna. */
 importScripts('./artwork.js');
-const CACHE='mercatonero-offline-v4';
-const ASSETS=['./','./index.html','./style.css','./artwork.css','./game.js','./artwork.js','./app.js','./assets/ornament.svg',MercatoArt.caravan,...Object.values(MercatoArt.objects),...Object.values(MercatoArt.roles)];
+const CACHE='mercatonero-offline-v5';
+const ASSETS=['./','./index.html','./style.css','./artwork.css','./game.js','./artwork.js','./app.js','./assets/ornament.svg','./docs/Regolamento-0.5.pdf',MercatoArt.caravan,...Object.values(MercatoArt.objects),...Object.values(MercatoArt.roles)];
 self.addEventListener('install',event=>{
   event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting()));
 });

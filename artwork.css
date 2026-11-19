@@ -49,3 +49,10 @@ body{background-image:radial-gradient(ellipse at 50% 0,#edddc244,transparent 65%
   .role-print .role-print-image{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:white;border-radius:0}
   .role-print>:not(.role-print-image){visibility:hidden}.sweets-preview{display:none!important}
 }
+
+.white-reserve{margin:16px 0;padding:12px 14px;border:1px dashed var(--gold);border-radius:9px;font-size:12px}
+.white-reserve p{margin:5px 0 0;color:var(--muted)}.hand.blanks{margin:12px 0 0}.hand-card.blank{min-height:88px;background:#fff9e9;border-style:solid}.hand-card.blank .hand-value{color:#867366}
+.trick-icon{font:22px/1.2 Georgia,serif;align-self:center;color:#8d2448;margin:6px 0}.effect-card{border:1px solid var(--gold);border-radius:10px;padding:15px;margin:15px 0}.effect-card h3{margin:0 0 7px}.effect-card p{font-size:12px;margin:0}.effect-symbol{float:right;font:32px Georgia,serif;color:var(--gold)}.effect-field{max-width:360px;margin:16px 0}.tip-badge{font-size:10px;color:#8d2448;border:1px solid #c98e6f;border-radius:4px;padding:3px 6px;margin:0 0 5px;align-self:flex-start;background:#ffe3b5}
+@media screen{[data-theme="dark"] .hand-card.blank{background:#fff6df}[data-theme="dark"] .hand-card.blank.selected{background:#e9c788}}
+@media print{.hand-card.blank{min-height:0}.trick-icon{font-size:24pt;margin:3mm auto}}
+.covered-bid{display:flex;gap:3px;margin:7px 0}.card-back{display:grid;place-items:center;width:17px;height:24px;border-radius:3px;border:1px solid #c49e60;font-size:9px;color:#f5dfad;background:repeating-linear-gradient(45deg,#543350 0 3px,#6d3d58 3px 5px)}.card-back.trick-back{background:radial-gradient(#be854a 1px,#742b45 1px);background-size:4px 4px;border-style:dashed}
